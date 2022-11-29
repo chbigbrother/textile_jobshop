@@ -1,0 +1,112 @@
+{% extends "algorithm_test/common/navigation.html" %}
+{% block content %}
+
+<div class="row">
+    <div class="col-xl-6 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">스케줄링 테스트 </h6>
+            </div>
+            <div class="modal-body pknu-modal-body-overflow">
+                <div class="row sch-pknu-modal-row">
+                    <div class="col-md-3"><label for="machine_num" class="pt-2">기계 대수</label></div>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="machine_num" value="" />
+                    </div>
+                </div>
+                <div class="row sch-pknu-modal-row">
+                    <div class="col-md-3"><label class="pt-2">작업 개수</label></div>
+                    <div class="col-md-9" id="divSelectOrder_old">
+                        <input type="text" class="form-control" id="job_num" value="" />
+                    </div>
+                </div>
+                <div class="row sch-pknu-modal-row">
+                    <div class="col-md-3"><label class="pt-2" style="font-size:0.95rem;">작업별 수량</label></div>
+                    <div class="col-lg-9" id="job_count">
+
+                    </div>
+                </div>
+                <div class="row sch-pknu-modal-row">
+                    <div class="col-md-3"><label class="pt-2" style="font-size:0.95rem;">작업 수량</label></div>
+                    <div class="col-lg-9" id="opt_count">
+
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer py-3 d-flex flex-row align-items-center justify-content-between">
+                <a href="#" id="execute" class="btn btn-dark w-100">
+                    <i class="fas fa-download fa-sm text-white-50"></i> &nbsp;실행
+                </a>
+            </div>
+
+        </div>
+    </div>
+    <div class="col-xl-6 col-lg-5">
+        <div class="card shadow mb-4">
+            <!-- Card Header - Dropdown -->
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">스케줄 차트</h6>
+            </div>
+            <!-- Card Body -->
+            <div class="card-body chart-body">
+                <div class="chart-area">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="css-loader" class="loader loader-default"></div>
+<script src="/static/js/jquery.treegrid.min.js"></script>
+<script>
+    $(function(){
+        $("#job_num").on("change",function(){
+            var cnt = $("#job_num").val();
+            cnt = parseInt(cnt);
+            var innerHTML = "";
+            var optHTML = "";
+            for(var i=0;i<cnt;i++){
+                innerHTML += 'job ' + parseInt(i+1) + '<input type="text" class="form-control job_cnt" value=""  style="margin-bottom:1.5rem;"/>';
+                optHTML += 'job ' + parseInt(i+1) + '<input type="text" class="form-control opt_cnt" value=""  style="margin-bottom:1.5rem;"/>';
+            }
+            $("#job_count").html(innerHTML);
+            $("#opt_count").html(optHTML);
+
+        });
+        var ctx = document.getElementById("myAreaChart");
+        $("#execute").on("click", function(){
+            $('#css-loader').addClass("is-active");
+            var machine_num = $("#machine_num").val();
+            var job_num = $("#job_num").val();
+            var operation = new Array();
+            var demands = new Array();
+            $(".opt_cnt").each(function(index){
+                operation.push(parseInt($(this).val()));
+            });
+            $(".job_cnt").each(function(index){
+                demands.push(parseInt($(this).val()));
+            });
+            var obj = new Object();
+            obj.machine_num = machine_num;
+            obj.job_num = job_num;
+            obj.operation = operation;
+            obj.demands = demands;
+            $.ajax({
+                url: "{% url 'schedule:schedule.fjsp_chart' %}",
+                method: 'GET',
+                dataType: "json",
+                type:'json',
+                contentType: 'application/json',
+                data: JSON.stringify(obj),
+            }).done(function(response) {
+                $('#css-loader').removeClass("is-active");
+                $(".chart-area").html('<img src="/static/img/fjsp_gantt.svg" class="" alt=""/>');
+
+
+            });
+
+        });
+    });
+</script>
+{% endblock %}
