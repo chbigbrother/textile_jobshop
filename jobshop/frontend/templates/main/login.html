@@ -11,6 +11,7 @@
     <link href="/static/css/tabler-payments.min.css" rel="stylesheet"/>
     <link href="/static/css/tabler-vendors.min.css" rel="stylesheet"/>
     <link href="/static/css/demo.min.css" rel="stylesheet"/>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   </head>
   <body  class=" border-top-wide border-primary d-flex flex-column">
     <div class="page page-center">
@@ -34,13 +35,18 @@
                 <div class="row d-flex justify-content-between mt-4 mb-2">
                     <div class="mb-3">
                        <div class="form-check custom-checkbox ms-1">
-                            <input type="checkbox" class="form-check-input" id="basic_checkbox_1">
-                            <label class="form-check-label" for="basic_checkbox_1">아이디 기억</label>
+                            <input type="radio" class="form-check-input" id="basic_checkbox_1" name="default" >
+                            <label class="form-check-label" for="basic_checkbox_1">생산자 테스트 계정으로 로그인</label>
+                            <br/>
+                            <input type="radio" class="form-check-input" id="basic_checkbox_2" name="default">
+                            <label class="form-check-label" for="basic_checkbox_1">구매자 테스트 계정으로 로그인</label>
                         </div>
+
                     </div>
                 </div>
+
                 <div class="form-footer">
-                  <button type="submit" class="btn btn-dark w-100">로그인</button>
+                  <button type="button" id="loginBtn" class="btn btn-dark w-100">로그인</button>
                 </div>
               </div>
             </form>
@@ -59,6 +65,24 @@
 <!--    <script src="/static/vendor/global/global.min.js"></script>-->
 <!--    <script src="/static/js/custom.min.js"></script>-->
 <!--    <script src="/static/js/dlabnav-init.js"></script>-->
+<script>
+    $(function(){
 
+        $('#loginBtn').on('click',function(){
+            if ($('#basic_checkbox_1').prop('checked') == true){
+                $('#username').val('testprovider');
+                $('#password').val('test123!');
+                $('form').submit();
+            }
+            if ($('#basic_checkbox_2').prop('checked') == true){
+                $('#username').val('testbuyer');
+                $('#password').val('test123!');
+                $('form').submit();
+            }
+        });
+
+    });
+
+</script>
 </body>
 </html>

@@ -11,7 +11,6 @@ def index(request):
 def home(request):
     # template_name = 'main/index.html'
     template_name = 'common/dashboard.html'
-
     dateFrom, dateTo = get_dates(request)
 
     context = {

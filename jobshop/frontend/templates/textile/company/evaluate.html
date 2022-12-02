@@ -1,0 +1,78 @@
+{% extends "textile/common/navigation.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+    <!-- DataTales Example -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">{{ user.groups.all.0.name }} &nbsp; 신뢰도</h6>
+            </div>
+            <div class="card-body">
+                <div class="col-md-6" id="service">
+                    <h5 class="pknu-h5">신뢰도</h5>
+                    <div class="star-rating" style="font-size:3em; width: 9em; margin-left:1.5em;">
+                        <input type="radio" id="5-stars" name="rating" value="5" disabled="true" />
+                        <label for="5-stars" class="star">&#9733;</label>
+                        <input type="radio" id="4-stars" name="rating" value="4" disabled="true" />
+                        <label for="4-stars" class="star">&#9733;</label>
+                        <input type="radio" id="3-stars" name="rating" value="3" disabled="true" />
+                        <label for="3-stars" class="star">&#9733;</label>
+                        <input type="radio" id="2-stars" name="rating" value="2" disabled="true" />
+                        <label for="2-stars" class="star">&#9733;</label>
+                        <input type="radio" id="1-star" name="rating" value="1" disabled="true" />
+                        <label for="1-star" class="star">&#9733;</label>
+                    </div>
+                    <div style="width:5em; margin-left:91%;">
+                    {% for comp in comp_list|slice:":1" %}
+                        <input type="hidden" id="comp_cred" value="{{ comp.credibility }}">
+                        <h5 style="text-align:center;">{{ comp.credibility }} / 5.0</h5>
+                    {% endfor %}
+                    </div>
+                </div>
+                <hr>
+                <div class="col-md-12" id="">
+                    <h5 class="pknu-h5">회사 정보</h5>
+                    {% for comp in comp_list|slice:":1" %}
+                    <div class="row pknu-row">
+                        <div class="col-lg-6" style="margin-bottom:0.5rem;"><h5>위치 :&nbsp; </h5></div>
+                        <div class="col-lg-6">
+                              <h5>{{ comp.address }}</h5>
+                        </div>
+                        <div class="col-lg-6" style="margin-bottom:0.5rem;"><h5>연락처 :&nbsp; </h5></div>
+                        <div class="col-lg-6" >
+                              <h5>{{ comp.contact }}</h5>
+                        </div>
+                        <div class="col-lg-6"><h5>이메일 :&nbsp; </h5></div>
+                        <div class="col-lg-6" >
+                              <h5>{{ comp.email }}</h5>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--게시판 관련 js-->
+<!-- Page level plugins -->
+<script src="/static/vendor/datatables/jquery.dataTables.min.js"></script>
+<script src="/static/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+<!-- Page level custom scripts -->
+<script src="/static/js/demo/datatables-demo.js"></script>
+<!-- sweetalert 설치 후 사용가능
+     $ npm install sweetalert2 -->
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!--게시판 관련 js-->
+<script>
+    $(function(){
+        var cred = $('#comp_cred').val();
+        cred = parseInt(cred);
+        $(':input:radio[name=rating]:checked').val();
+        $('input:radio[name=rating]:input[value=' + cred + ']').attr("checked", true);
+
+    });
+
+
+
+</script>
+{% endblock %}

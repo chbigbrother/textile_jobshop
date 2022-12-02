@@ -21,11 +21,12 @@ from datetime import timedelta
 def home(request):
     template_name = 'textile/company/comp_regist.html'
     comp_list = Facility.objects.all()
+
     date = datetime.datetime.today() - timedelta(days=3)
     date = {
         "comp_list": comp_list,
         'dateFrom': date.strftime("%Y-%m-%d"),
-        'path': '회사정보 / 설비정보등록'
+        'path': '회사정보 / 설비정보관리'
     }
     return render(request, template_name, date)
 
@@ -55,6 +56,14 @@ def comp_list_view(request):
         'path': '회사정보 / 설비정보검색'
     }
     return render(request, template_name, date)
+def comp_evaluate(request):
+    template_name = 'textile/company/evaluate.html'
+
+    date = {
+
+        'path': '회사정보 / 평가'
+    }
+    return render(request,template_name, date)
 
 # 설비현황검색 company production view HTML
 def comp_production_view(request):
@@ -69,7 +78,6 @@ def comp_production_view(request):
         'app_name': 'company',
         'path': '회사정보 / 설비현황검색'
     }
-
     return render(request, template_name, date)
 
 # 설비정보검색 데이터 다운로드 csv

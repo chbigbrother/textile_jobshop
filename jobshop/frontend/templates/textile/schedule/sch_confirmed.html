@@ -118,6 +118,7 @@ $(function(){
                 obj.str_month = str_month;
                 obj.end_year = end_year;
                 obj.end_month = end_month;
+                obj.id = '';
                 $.ajax({
                     url: "{% url 'schedule:schedule.monthly_confirmed_order' %}",
                     method:'GET',
@@ -126,7 +127,6 @@ $(function(){
                     data : JSON.stringify(obj),
                     processData: false,
                     success: function(result){
-                        console.log(result);
                         var events = [];
                         for(var i=0; i<result.length; i++){
                             events.push({
@@ -142,12 +142,24 @@ $(function(){
             }
         }],
       eventClick: function(info) {
-        var data = info.event.title
+        var data = info.event.title;
+        var obj = new Object;
+        obj.id = data;
         $.ajax({
-            url:'',
+            url: "{% url 'schedule:schedule.monthly_confirmed_order' %}",
             method:'GET',
+            dataType: 'json',
+            contentType: 'application/json',
+            data : JSON.stringify(obj),
+            processData: false,
             success: function(result){
+                console.log(result);
+                result = result[0];
                 $('#activationSettingModal').modal('show');
+                $('#workStartDate').val(result.work_str_date);
+                $('#workEndDate').val(result.work_end_date);
+                $('#orderId').val(result.order_id);
+                $('#schExeDate').val(result.sch_date);
                 $('.modal-title').text(info.event.title);
             },
         });

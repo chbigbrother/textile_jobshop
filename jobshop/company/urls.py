@@ -35,4 +35,6 @@ urlpatterns = [
     path('modal/prod/upload/', comp_prod_update_modal, name='company.comp_prod_update_modal'),
     path('csv/upload/', upload_file, name='upload'),
     path('delete/', delete, name='delete'),
+
+    path('evaluate/', comp_evaluate, name='textile.company.evaluate'),
 ]

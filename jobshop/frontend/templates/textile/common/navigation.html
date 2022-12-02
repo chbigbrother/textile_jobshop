@@ -43,8 +43,8 @@
             <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
               <span class="avatar avatar-sm" style="background-image: url(/static/avatars/undraw_profile.png)"></span>
               <div class="d-none d-xl-block ps-2">
-                <div>{{ user.username }}</div>
-                <div class="mt-1 small ">{{ user.groups.all.0.name }}</div>
+                <div>{{ user.groups.all.0.name }} / {{ user.username }}</div>
+                <!--<div class="mt-1 small "> {{ user.groups.all.1.name }} / {{ user.groups.all.0.name }}</div> -->
               </div>
             </a>
             <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
@@ -86,7 +86,7 @@
                 <div class="dropdown-menu">
                   <div class="dropdown-menu-columns">
                     <div class="dropdown-menu-column">
-                      <a class="dropdown-item {% if request.resolver_match.url_name == 'textile.order.home' %} active {% endif %}" href="/textile/order/" >
+                      <a class="dropdown-item {% if user.groups.all.0.name == '생산자' %} none {% endif %} {% if request.resolver_match.url_name == 'textile.order.home' %} active {% endif %}" href="/textile/order/" >
                         주문 등록
                       </a>
                       <a class="dropdown-item {% if request.resolver_match.url_name == 'textile.order.order_list_view' %} active {% endif %}" href="/textile/order/list/" >
@@ -133,7 +133,7 @@
                   </a>
                 </div>
               </li>
-              <li class="nav-item dropdown {% if user.groups.all.0.name == 'customer' %} none {% endif %} {% if request.resolver_match.url_name == 'textile.company' or request.resolver_match.url_name == 'textile.company.index' or request.resolver_match.url_name == 'textile.company.list' or request.resolver_match.url_name == 'textile.company.facility' %} active {% endif %}">
+              <li class="nav-item dropdown {% if user.groups.all.0.name == '구매자' %} none {% endif %} {% if request.resolver_match.url_name == 'textile.company' or request.resolver_match.url_name == 'textile.company.index' or request.resolver_match.url_name == 'textile.company.list' or request.resolver_match.url_name == 'textile.company.facility' %} active {% endif %}">
                 <a class="nav-link dropdown-toggle" href="#navbar-layout" data-bs-toggle="dropdown" data-bs-auto-close="outside" role="button" aria-expanded="false" >
                   <span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/layout-2 -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><rect x="4" y="4" width="6" height="5" rx="2" /><rect x="4" y="13" width="6" height="7" rx="2" /><rect x="14" y="4" width="6" height="7" rx="2" /><rect x="14" y="15" width="6" height="5" rx="2" /></svg>
@@ -145,23 +145,20 @@
                 <div class="dropdown-menu">
                   <div class="dropdown-menu-columns">
                     <div class="dropdown-menu-column">
-                      <a class="dropdown-item {% if request.resolver_match.url_name == 'textile.company.index' %} active {% endif %}" href="/textile/company/" >
-                        설비정보등록
+                      <a class="dropdown-item {% if user.groups.all.0.name == '구매자' %} none {% endif %} {% if request.resolver_match.url_name == 'textile.company.index' %} active {% endif %}" href="/textile/company/" >
+                        설비정보관리
                       </a>
-                      <a class="dropdown-item {% if request.resolver_match.url_name == 'textile.company.list' %} active {% endif %}" href="/textile/company/info/list/" >
+                      <!-- <a class="dropdown-item {% if request.resolver_match.url_name == 'textile.company.list' %} active {% endif %}" href="/textile/company/info/list/" >
                         설비정보검색
-                      </a>
-                      <a class="dropdown-item  {% if request.resolver_match.url_name == 'textile.company.facility' %} active {% endif %}" href="/textile/company/facility/list/" >
-                        작업현황검색
-                      </a>
-                      <a class="dropdown-item {% if request.resolver_match.url_name == 'textile.company.facility' %} active {% endif %}" href="/textile/company/facility/list/" >
-                        업체신뢰도평가
+                      </a> -->
+                      <a class="dropdown-item {% if request.resolver_match.url_name == 'textile.company.evaluate' %} active {% endif %}" href="/textile/company/evaluate/" >
+                        평가
                       </a>
                     </div>
                   </div>
                 </div>
               </li>
-              <li class="nav-item dropdown {% if user.groups.all.0.name == 'customer' %} none {% endif %} {% if request.resolver_match.url_name == 'schedule' or request.resolver_match.url_name == 'textile.schedule.sch_confirmed' or request.resolver_match.url_name == 'textile.schedule.history' or request.resolver_match.url_name == 'textile.schedule.history_chart' or request.resolver_match.url_name == 'textile.schedule.index' %} active {% endif %}">
+              <li class="nav-item dropdown {% if user.groups.all.0.name == '구매자' %} none {% endif %} {% if request.resolver_match.url_name == 'schedule' or request.resolver_match.url_name == 'textile.schedule.sch_confirmed' or request.resolver_match.url_name == 'textile.schedule.history' or request.resolver_match.url_name == 'textile.schedule.history_chart' or request.resolver_match.url_name == 'textile.schedule.index' %} active {% endif %}">
                 <a class="nav-link dropdown-toggle" href="#navbar-layout" data-bs-toggle="dropdown" data-bs-auto-close="outside" role="button" aria-expanded="false" >
                   <span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/file-text -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar" viewBox="0 0 16 16"> <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/> </svg>
@@ -176,15 +173,15 @@
                       <a class="dropdown-item {% if request.resolver_match.url_name == 'schedule.sch_confirmed' %} active {% endif %}" href="/textile/schedule/confirmed/" >
                         확정스케줄조회
                       </a>
-                      <a class="dropdown-item {% if request.resolver_match.url_name == 'textile.schedule.history' %} active
-                              {% elif request.resolver_match.url_name == 'schedule.history_chart' %} active
-                              {% endif %}" href="/textile/schedule/history/" >
-                        스케줄링이력
-                      </a>
                       <a class="dropdown-item {% if user.groups.all.0.name == 'admin' %} none {% endif %}
                       {% if request.resolver_match.url_name == 'schedule.index' %} mm-active {% endif %}"
                        href="/textile/schedule/" >
                         스케줄링실행
+                      </a>
+                      <a class="dropdown-item {% if request.resolver_match.url_name == 'textile.schedule.history' %} active
+                              {% elif request.resolver_match.url_name == 'schedule.history_chart' %} active
+                              {% endif %}" href="/textile/schedule/history/" >
+                        스케줄링이력
                       </a>
                     </div>
                   </div>

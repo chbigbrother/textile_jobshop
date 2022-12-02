@@ -19,6 +19,7 @@ class Facility(models.Model):
     facility_id = models.CharField(max_length=50, primary_key=True)  # 설비 아이디
     facility_name = models.IntegerField(null=False)  # 설비명
     comp_id = models.ForeignKey("Information", related_name="facilitycompany", on_delete=models.CASCADE, db_column="comp_id") # 회사아이디
+    fac_cat_id = models.ForeignKey("FCategory", related_name="facilitycategory", on_delete=models.CASCADE, db_column="fac_cat_id")
     created_at = models.DateTimeField(auto_now_add=True)  # 생성일자
     modified_at = models.DateTimeField(auto_now=True)  # 수정일자
 
@@ -52,3 +53,7 @@ class Product(models.Model):
     recommend_yn = models.CharField(max_length=2)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+
+class FCategory(models.Model):
+    fac_cat_id = models.CharField(max_length=120, primary_key=True)
+    fac_cat_name = models.CharField(max_length=120)

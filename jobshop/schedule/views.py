@@ -287,20 +287,24 @@ def monthly_confirmed_order(request):
     for i in request.GET:
         request = json.loads(i)
     available_list = []
-
-    if request['str_year'] != None:
-        str_year = request['str_year']
-        str_month = request['str_month']
-        end_year = request['end_year']
-        end_month = request['end_month']
-
-        final_result = OrderSchedule.objects.filter(sch_id__work_end_date__lte=str(end_year) + str(end_month) + '31', use_yn='Y')
+    id = request['id']
+    if len(id) > 0:
+        final_result = OrderSchedule.objects.filter(order_id=id, use_yn='Y')
     else:
-        year = date[0:4]
-        month = date[4:6]
-        lastday = calendar.monthrange(int(year), int(month))[1]
-        final_result = OrderSchedule.objects.filter(sch_id__work_str_date__gte=date + '01').filter(
-            sch_id__work_end_date__lte=date + str(lastday), use_yn='Y')
+
+        if request['str_year'] != None:
+            str_year = request['str_year']
+            str_month = request['str_month']
+            end_year = request['end_year']
+            end_month = request['end_month']
+
+            final_result = OrderSchedule.objects.filter(sch_id__work_end_date__lte=str(end_year) + str(end_month) + '31', use_yn='Y')
+        else:
+            year = date[0:4]
+            month = date[4:6]
+            lastday = calendar.monthrange(int(year), int(month))[1]
+            final_result = OrderSchedule.objects.filter(sch_id__work_str_date__gte=date + '01').filter(
+                sch_id__work_end_date__lte=date + str(lastday), use_yn='Y')
 
     for i in final_result:
         available_dict = {}
@@ -308,13 +312,14 @@ def monthly_confirmed_order(request):
         available_dict['work_end_date'] = i.sch_id.work_end_date
         available_dict['order_id'] = i.order_id_id
         available_dict['sch_id'] = i.sch_id_id
+        available_dict['sch_date'] = i.sch_id_id[3:11]
         available_list.append(available_dict)
 
     def json_default(value):
         if isinstance(value, datetime.datetime):
             return value.strftime('%Y-%m-%d')
         raise TypeError('not JSON serializable')
-    # return JsonResponse(list(available_list), safe=False)
+
     return HttpResponse(json.dumps(available_list, default=json_default, ensure_ascii=False), content_type="application/json")
 
 # draw Gantt Chart data
@@ -608,7 +613,9 @@ def available_list(request):
                     j['use_yn'] = i['use_yn']
                     result.append(j)
             else:
-
+                sch_list = Schedule.objects.filter(comp_id=request.user.groups.values('id')[0]['id'],
+                                                   created_at__year=now.year, created_at__month=now.month,
+                                                   created_at__day=now.day)
                 count = sch_list.aggregate(Max('count'))
                 count = str(count['count__max'])
                 available_list = Schedule.objects.raw(

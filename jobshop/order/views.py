@@ -34,11 +34,12 @@ def home(request):
 def order_list_view(request):
     template_name = 'textile/order/order_list.html'
 
-    dateFrom, dateTo, order_list = order_list_query(request)
+    dateFrom, dateTo, orderStatus, order_list = order_list_query(request)
 
     context = {
         'dateFrom': dateFrom,
         'dateTo': dateTo,
+        'orderStatus' : orderStatus,
         'order_list': order_list,
         'path': '주문정보 / 주문 검색',
         'selected': 'ordermanagement'
@@ -100,7 +101,12 @@ def order_list_query(request):
     group = request.user.groups.values_list('name', flat=True).first()
     group_id = request.user.groups.values_list('id', flat=True).first()
     user_name = request.user.first_name
+    if len(user_name) == 0: user_name = request.user.username
+
     result_list = []
+    orderStatus = 1
+    if group == '생산자': group = 'provider'
+    if group == '구매자': group = 'customer'
 
     if group == 'customer':
         if 'dateFrom' in request.GET:
@@ -116,6 +122,7 @@ def order_list_query(request):
             sch_date_to = datetime.datetime.today()
             result_list = OrderList.objects.filter(sch_date__gte=date.strftime("%Y%m%d"),
                                                   sch_date__lte=datetime.datetime.today().strftime("%Y%m%d")).filter(cust_name=user_name)
+
     elif group == 'admin':
         if 'dateFrom' in request.GET:
             sch_date_from = datetime.datetime.strptime(request.GET['dateFrom'], "%Y-%m-%d")
@@ -134,10 +141,12 @@ def order_list_query(request):
         if 'dateFrom' in request.GET:
             sch_date_from = datetime.datetime.strptime(request.GET['dateFrom'], "%Y-%m-%d")
             sch_date_to = datetime.datetime.strptime(request.GET['dateTo'], "%Y-%m-%d")
+            orderStatus = request.GET['orderStatus']
+            order_list = OrderList.objects.filter(order_status=orderStatus)
 
             date_from = request.GET['dateFrom'].replace('-', '')
             date_to = request.GET['dateTo'].replace('-', '')
-            order_list = OrderList.objects.filter(sch_date__gte=date_from).filter(sch_date__lte=date_to)
+            # order_list = OrderList.objects.filter(sch_date__gte=date_from).filter(sch_date__lte=date_to)
                 # .filter(prod_id__comp_id=group_id)
             if len(order_list) > 0:
                 for i in order_list:
@@ -148,12 +157,13 @@ def order_list_query(request):
                                 i.prod_id = j.prod_name
                                 result_list.append(i)
 
-
         else:
             sch_date_from = date
             sch_date_to = datetime.datetime.today()
-            order_list = OrderList.objects.filter(sch_date__gte=date.strftime("%Y%m%d"),
-                                                  sch_date__lte=datetime.datetime.today().strftime("%Y%m%d"))
+
+            order_list = OrderList.objects.filter(order_status=1)
+            #order_list = OrderList.objects.filter(sch_date__gte=date.strftime("%Y%m%d"),
+             #                                     sch_date__lte=datetime.datetime.today().strftime("%Y%m%d"))
                 # .filter(prod_id__comp_id=group_id)
             if len(order_list) > 0:
                 for i in order_list:
@@ -202,8 +212,13 @@ def order_list_query(request):
                     i.ord_status = 0
         if len(fixed_status) == 0:
                 i.ord_status = 2
-
-    return sch_date_from.strftime("%Y-%m-%d"), sch_date_to.strftime("%Y-%m-%d"), result_list # order_list
+        i.ord_status = str(orderStatus)
+    #
+    # if orderStatus == '0':
+    #     orderStatus = '업체선택요청'
+    # else:
+    #     orderStatus = '업체생산중'
+    return sch_date_from.strftime("%Y-%m-%d"), sch_date_to.strftime("%Y-%m-%d"), orderStatus, result_list # order_list
 
 # 수주관리검색 수정
 def order_list_edit(request):
@@ -254,11 +269,12 @@ def order_list_search(request):
 
         order_list = OrderList.objects.filter(sch_date__gte=date_from).filter(sch_date__lte=date_to)
         order_list = OrderList.objects.raw(
-            "SELECT cust_name, order_id, prod_id, SUM(amount) as amount " +
+            "SELECT cust_name, order_id, prod_id, amount " +
             "FROM order_orderlist " +
             "WHERE sch_date >= '" + date_from + "' AND " +
-            "sch_date <= '" + date_to + "'" +
-            "GROUP BY prod_id")
+            "sch_date <= '" + date_to + "'"
+            )
+
         for i in order_list:
             product_dict = {}
             product = Product.objects.filter(prod_id=i.prod_id)[0]
@@ -278,11 +294,11 @@ def order_list_search(request):
             order_list_result.append(product_dict)
     else:
         order_list = OrderList.objects.raw(
-            "SELECT cust_name, order_id, prod_id, SUM(amount) as amount " +
+            "SELECT cust_name, order_id, prod_id, amount " +
             "FROM order_orderlist " +
             "WHERE sch_date >= '" + date.strftime("%Y%m%d") + "' AND " +
-            "sch_date <= '" + datetime.datetime.today().strftime("%Y%m%d") + "'" +
-            "GROUP BY prod_id")
+            "sch_date <= '" + datetime.datetime.today().strftime("%Y%m%d") + "'"
+            )
         for i in order_list:
             product_dict = {}
             product = Product.objects.get(prod_id=i.prod_id.prod_id)
