@@ -12,7 +12,7 @@
 </style>
 <!-- Page Heading -->
 <div class="row">
-    <div class="col-xl-6 col-lg-5">
+    <div class="col-xl-12 col-lg-12">
         <div class="card shadow mb-4">
             <!-- Card Header - Dropdown -->
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
@@ -31,7 +31,7 @@
             </div>
         </div>
     </div>
-    <div class="col-lg-6">
+    <div class="col-lg-12">
         <!-- Circle Buttons -->
         <div class="card shadow mb-4">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
@@ -87,7 +87,7 @@
                     </div>
                 </div>
 
-                <div class="row sch-pknu-modal-row">
+                <div class="row sch-pknu-modal-row ord_hidden">
                     <div class="col-md-3"><label class="pt-2">주문선택</label></div>
                     <div class="col-md-9" id="divSelectOrder_old">
                         <!-- <select class="form-control" name="select" multiple="multiple" id="selectOrder">
@@ -95,7 +95,6 @@
                         </select> -->
                     </div>
                 </div>
-
                         <input class="form-control text-center" type="hidden" name="dateFrom" id="strDate" />
             </div>
             <div class="modal-footer" id="htfooter">
@@ -110,6 +109,31 @@
     </div>
 </div>
 <!-- config.txt 정보 입력 Modal END -->
+
+<!-- ***************************************************************** confirmDataModal ***************************************************************** -->
+<div class="modal modal-blur fade" id="confirmDataModal" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">제안 가격, 작업 종료일자 정보</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pknu-modal-body-overflow" id="priceModalBody">
+
+
+            </div>
+            <div class="modal-footer" id="footer">
+                <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">
+                    <i class="far fa-window-close fa-sm text-white-50"></i> &nbsp; 취소
+                </button>
+                <a href="#" onclick="confirmSend()" class="btn btn-primary ms-auto">
+                    <i class="far fa-paper-plane fa-sm text-white-50"></i> &nbsp;확정 전달
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- confirmDataModal END -->
 
 <div id="css-loader" class="loader loader-default"></div>
 <script src="/static/js/schedule/schedule.js"></script>

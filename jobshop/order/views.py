@@ -269,7 +269,7 @@ def order_list_search(request):
 
         order_list = OrderList.objects.filter(sch_date__gte=date_from).filter(sch_date__lte=date_to)
         order_list = OrderList.objects.raw(
-            "SELECT cust_name, order_id, prod_id, amount " +
+            "SELECT cust_name, order_id, prod_id, amount, exp_date " +
             "FROM order_orderlist " +
             "WHERE sch_date >= '" + date_from + "' AND " +
             "sch_date <= '" + date_to + "'"
@@ -290,11 +290,12 @@ def order_list_search(request):
             product_dict['order_id'] = i.order_id
             product_dict['prod_name'] = product_name
             product_dict['amount'] = int(i.amount)
+            product_dict['exp_date'] = i.exp_date
             product_dict['avail_fac_cnt'] = avail_fac_cnt
             order_list_result.append(product_dict)
     else:
         order_list = OrderList.objects.raw(
-            "SELECT cust_name, order_id, prod_id, amount " +
+            "SELECT cust_name, order_id, prod_id, amount, exp_date " +
             "FROM order_orderlist " +
             "WHERE sch_date >= '" + date.strftime("%Y%m%d") + "' AND " +
             "sch_date <= '" + datetime.datetime.today().strftime("%Y%m%d") + "'"
@@ -307,6 +308,7 @@ def order_list_search(request):
             product_dict['order_id'] = i.order_id
             product_dict['prod_name'] = product_name
             product_dict['amount'] = int(i.amount)
+            product_dict['exp_date'] = i.exp_date
             order_list_result.append(product_dict)
 
     def json_default(value):

@@ -5,8 +5,39 @@ function dateformat(value) {
     var date = year + '-' + month + '-' + day;
     return date;
 }
+
 // 전송 클릭 시 이벤트
 function sendSchedule() {
+    $('#confirmDataModal').modal('show');
+    var orderInfo = new Array();
+    for (var i = 0; i < $('.checkbox').length; i++) {
+        if ($('.checkbox').eq(i).val() == 'Y') {
+            orderInfo.push($('.checkbox').eq(i).parent().siblings('.order_id').val());
+        }
+    }
+    var innerHTML = '';
+    for(var i=0; i<orderInfo.length; i++){
+        var thisOrders = orderInfo[i].split(',');
+        for (var j=0; j<thisOrders.length; j++){
+            innerHTML += '<div class="row sch-pknu-modal-row">' +
+                            '<div class="col-md-3"><label class="pt-2">주문 정보</label></div>' +
+                                '<div class="col-md-9" id="orderInfoModal">' +
+                                    '<input type="text" class="form-control" id="schInfo" aria-describedby="emailHelp" readonly="readonly" value="' + thisOrders[j]+ '"  />' +
+                                '</div>' +
+                         '</div>' +
+                        '<div class="row sch-pknu-modal-row">' +
+                            '<div class="col-md-3"><label class="pt-2">제안 가격</label></div>' +
+                            '<div class="col-md-9" id="offerPriceModal">' +
+                                '<input type="text" class="form-control offeredPrice" aria-describedby="emailHelp" value=""  />' +
+                            '</div>'+
+                        '</div>';
+        }
+    }
+    $('#priceModalBody').html(innerHTML);
+}
+
+// 확정 전달 클릭 시 이벤트
+function confirmSend(){
     Swal.fire({
         icon: 'question',
         title: '스케쥴을 확정하시겠습니까?',
@@ -16,28 +47,31 @@ function sendSchedule() {
     }).then((result) => {
         if (result.isConfirmed) {
             $('#css-loader').addClass("is-active");
-
             var order = new Array();
+            var sch_id = new Array();
             for (var i = 0; i < $('.checkbox').length; i++) {
                 if ($('.checkbox').eq(i).val() == 'Y') {
-                    order.push($('.checkbox').eq(i).parent().siblings('.sch_id').val());
+                    order.push($('.checkbox').eq(i).parent().siblings('.order_id').val());
+                    sch_id.push($('.checkbox').eq(i).parent().siblings('.sch_id').val());
                 }
             }
+            var price = new Array();
+            for (var i=0; i<$('.offeredPrice').length; i++){
+                price.push($('.offeredPrice').eq(i).val());
+            }
+
             var obj = new Object();
             obj.type = 'company';
             obj.order_list = order;
+            obj.price_list = price;
+            obj.sch_list = sch_id;
             $.ajax({
                 url: '/textile/schedule/fixed/order/', /* "{% url 'schedule:fixed_order' %}",*/
                 method: 'POST',
                 dataType: "json",
                 type:'json',
                 contentType: 'application/json',
-                /* contentType: "application/x-www-form-urlencoded; charset=UTF-8", */
                 data: JSON.stringify(obj),
-                /* {
-                    'order_list[]': order,
-                    'data': JSON.stringify(obj),
-                },*/
             }).done(function(response) {
                 $('#css-loader').removeClass("is-active");
                 location.reload();
@@ -46,6 +80,8 @@ function sendSchedule() {
         }
     });
 }
+
+
 // 새로 생성 버튼 클릭 시 이벤트
 function removeSchedule() {
     // 기존의 확정된 스케줄 삭제
@@ -96,6 +132,7 @@ function activate() {
     var selected_fac_num_list = new Array();
     var selected_opt_num_list = new Array();
     var arr = new Array();
+    var sch_ord_id = new Array();
     var str_arr = new Array();
     $('.ordamt').each(function(i){
         console.log($('.ordamt')[i]);
@@ -125,7 +162,12 @@ function activate() {
         str_arr.push($(this).val());
     });
 
+    $('.sch_ord_id').each(function(i, elem){
+        sch_ord_id.push($(this).val());
+    })
+
     var obj = new Object();
+    obj.ord_id = sch_ord_id;
     obj.ord = selected_ord_list;
     obj.fac = selected_fac_list;
     obj.amt = selected_amt_list;
@@ -218,10 +260,13 @@ $(function() {
         var result = orderSearch($('#ordDateFrom').val(), $('#ordDateTo').val());
         if (result.length > 0) {
             var innerHTML = '';
+            var ordHTML = '';
             innerHTML += '<select class="form-control" name="select" multiple="multiple" id="selectOrder">';
             for (var i = 0; i < result.length; i++) {
                 if (typeof result[i] !== 'undefined') {
-                    innerHTML += '<option class="' + result[i].amount + "_" + result[i].avail_fac_cnt + '" value="' + result[i].prod_name + '">' + result[i].cust_name + '_' + result[i].prod_name + '_' + result[i].amount + ' yd</option>';
+                    innerHTML += '<option class="' + result[i].amount + "_" + result[i].avail_fac_cnt + '" value="' + result[i].prod_name + '">' + result[i].cust_name + '_' + result[i].prod_name + '_' + result[i].amount + ' yd' +
+                    ' 요청기한 ' + result[i].exp_date + ' </option>';
+                    ordHTML += '<input type="hidden" class="sch_ord_id" value="' + result[i].order_id + '">';
                 }
             }
         } else {
@@ -231,6 +276,7 @@ $(function() {
         $("#selectOrder").multipleSelect({
             filter: true
         });
+        $('.ord_hidden').append(ordHTML);
         return;
     }
     // 주문일자에 따른 수주 리스트 불러오기 END
@@ -304,7 +350,7 @@ $(function() {
         var innerHTML = '';
         var data = '';
         $.ajax({
-            url: "{% url 'company:company.comp_avail_facility' %}",
+            url: '/textile/company/avail/facility/', /*"{% url 'company:company.comp_avail_facility' %}",*/
             method: 'GET',
             dataType: 'json',
             async: false,
@@ -326,7 +372,7 @@ $(function() {
         } else {
             var innerHTML = '<input type="text" class="form-control" placeholder="사용가능한 설비가 없습니다." value="" readonly="readonly" />';
         }
-            innerHTML += '</select>';
+            innerHTML += '</select></div> ';
         return innerHTML;
     }
 
@@ -379,7 +425,6 @@ $(function() {
                     var xmin = new Date(result[i].work_str_date);
                     var x_axis_1 = new Date(xmin.setDate(xmin.getDate() + result[i].x_axis_1));
                     var x_axis_2 = result[i].x_axis_2 - result[i].x_axis_1;
-                    console.log(x_axis_2);
                     if (y_min > result[i].y_axis_1) {y_min = result[i].y_axis_1;}
                     if (xmax < result[i].x_axis_2) {xmax = result[i].x_axis_2;}
                     if (ymax < result[i].y_axis_1) {ymax = result[i].y_axis_1;}
@@ -508,107 +553,107 @@ $(function() {
             }
             /* ******************************************************** */
             $.ajax({
-            url: '/textile/schedule/avail/comp/', /* "{% url 'schedule:available_comp' %}",*/
-            method: 'GET',
-            dataType: 'json',
-            contentType: 'application/json',
-            processData: false,
-            success: function(result) {
-                $.ajax({
-                    url: '/textile/schedule/confirmed/order/',/* "{% url 'schedule:confirmed_order' %}", */
-                    method: 'GET',
-                    dataType: 'json',
-                    contentType: 'application/json',
-                    processData: false,
-                    success: function(data) {
-                        var innerHTML = '';
-                        if (data.length > 0) {
-                            for (var i = 0; i < data.length; i++) {
-                                if (data[i][0].use_yn == 'Y') {
-                                    $('#activationSetting').remove();
-                                    $('#sendSchedule').remove();
-                                    $('#sendBtn').html('<a href="#" onclick="removeSchedule()" id="removeSchedule"' +
-                                        'class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">' +
-                                        '<i class="fas fa-plus-square"></i>&nbsp 초기화</a>');
-                                    /* 추후 삭제 */
-                                    var prod_name = result[i].prod_id.toString();
-                                    var orderid = result[i].order_id_num.toString();
-                                    /* 추후 삭제 */
+                url: '/textile/schedule/avail/comp/', /* "{% url 'schedule:available_comp' %}",*/
+                method: 'GET',
+                dataType: 'json',
+                contentType: 'application/json',
+                processData: false,
+                success: function(result) {
+                    $.ajax({
+                        url: '/textile/schedule/confirmed/order/',/* "{% url 'schedule:confirmed_order' %}", */
+                        method: 'GET',
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        processData: false,
+                        success: function(data) {
+                            var innerHTML = '';
+                            if (data.length > 0) {
+                                for (var i = 0; i < data.length; i++) {
+                                    if (data[i][0].use_yn == 'Y') {
+                                        $('#activationSetting').remove();
+                                        $('#sendSchedule').remove();
+                                        $('#sendBtn').html('<a href="#" onclick="removeSchedule()" id="removeSchedule"' +
+                                            'class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">' +
+                                            '<i class="fas fa-plus-square"></i>&nbsp 초기화</a>');
+                                        /* 추후 삭제 */
+                                        var prod_name = result[i].prod_id.toString();
+                                        var orderid = result[i].order_id_id.toString();
+                                        /* 추후 삭제 */
 
-                                    var date = result[i].sch_id.toString()
-                                    var year = date.substring(3, 7);
-                                    var month = date.substring(7, 9);
-                                    var day = date.substring(9, 11);
-                                    date = year + '-' + month + '-' + day;
-                                    var count = i + 1;
-                                    innerHTML += '<tr>' +
-                                        '<input type="hidden" class="order_id" value="' + result[i].order_id + '" />' +
-                                        '<input type="hidden" class="sch_id" value="' + result[i].sch_id + '" />' +
-                                        '<td scope="row">' + count + '</td>' +
-                                        '<td>' + date + '</td>' +
-                                        '<td>' + orderid + '</td>' +
-                                        '<td>' + prod_name + '</td>' +
-                                        '<td><div style="width:1rem; height:1rem; background-color:' + result[i].sch_color + '"></div></td>' +
-                                        '<td><div class="checkbox" id="accept-' + count + '" style="font-weight:bold; color:#2e59d9;" />확정</td>' +
-                                        '</tr>';
-                                } else {
-                                    for (var i = 0; i < result.length; i++) {
-                                        var prod_name = result[i][0].prod_id.toString();
-                                        var orderid = result[i][0].order_id_num.toString();
-                                        var date = result[i][0].sch_id.toString();
-                                        // var date = result[i].schedule[0].sch_id.toString();
+                                        var date = result[i].sch_id.toString()
                                         var year = date.substring(3, 7);
                                         var month = date.substring(7, 9);
                                         var day = date.substring(9, 11);
                                         date = year + '-' + month + '-' + day;
                                         var count = i + 1;
                                         innerHTML += '<tr>' +
-                                            '<input type="hidden" class="order_id" value="' + result[i][0].order_id + '" />' +
-                                            '<input type="hidden" class="sch_id" value="' + result[i][0].sch_id + '" />' +
+                                            '<input type="hidden" class="order_id" value="' + result[i].order_id + '" />' +
+                                            '<input type="hidden" class="sch_id" value="' + result[i].sch_id + '" />' +
                                             '<td scope="row">' + count + '</td>' +
                                             '<td>' + date + '</td>' +
                                             '<td>' + orderid + '</td>' +
                                             '<td>' + prod_name + '</td>' +
-                                            '<td><div style="width:1rem; height:1rem; background-color:' + result[i][0].sch_color + '"></div></td>' +
-                                            '<td><input class="checkbox" id="accept-' + count + '" type="checkbox" checked="checked" value="Y" name="check"/></td>' +
+                                            '<td><div style="width:1rem; height:1rem; background-color:' + result[i].sch_color + '"></div></td>' +
+                                            '<td><div class="checkbox" id="accept-' + count + '" style="font-weight:bold; color:#2e59d9;" />확정</td>' +
                                             '</tr>';
+                                    } else {
+                                        for (var i = 0; i < result.length; i++) {
+                                            var prod_name = result[i][0].prod_id.toString();
+                                            var orderid = result[i][0].order_id_id.toString();
+                                            var date = result[i][0].sch_id.toString();
+                                            // var date = result[i].schedule[0].sch_id.toString();
+                                            var year = date.substring(3, 7);
+                                            var month = date.substring(7, 9);
+                                            var day = date.substring(9, 11);
+                                            date = year + '-' + month + '-' + day;
+                                            var count = i + 1;
+                                            innerHTML += '<tr>' +
+                                                '<input type="hidden" class="order_id" value="' + orderid + '" />' +
+                                                '<input type="hidden" class="sch_id" value="' + result[i][0].sch_id + '" />' +
+                                                '<td scope="row">' + count + '</td>' +
+                                                '<td>' + date + '</td>' +
+                                                '<td>' + orderid + '</td>' +
+                                                '<td>' + prod_name + '</td>' +
+                                                '<td><div style="width:1rem; height:1rem; background-color:' + result[i][0].sch_color + '"></div></td>' +
+                                                '<td><input class="checkbox" id="accept-' + count + '" type="checkbox" checked="checked" value="Y" name="check"/></td>' +
+                                                '</tr>';
+                                        }
                                     }
                                 }
+                            } else {
+                                for (var i = 0; i < result.length; i++) {
+                                    /* 추후 삭제 */
+                                    var prod_name = result[i].prod_id.toString();
+                                    var orderid = result[i].order_id_id.toString();
+                                    /* 추후 삭제 */
+                                    var date = result[i].sch_id.toString();
+                                    var year = date.substring(3, 7);
+                                    var month = date.substring(7, 9);
+                                    var day = date.substring(9, 11);
+                                    date = year + '-' + month + '-' + day;
+                                    var count = i + 1;
+                                    innerHTML += '<tr>' +
+                                        '<input type="hidden" class="order_id" value="' + orderid + '" />' +
+                                        '<input type="hidden" class="sch_id" value="' + result[i].sch_id + '" />' +
+                                        '<td scope="row">' + count + '</td>' +
+                                        '<td>' + date + '</td>' +
+                                        '<td>' + orderid + '</td>' +
+                                        '<td>' + prod_name + '</td>' +
+                                        '<td><input class="checkbox" id="accept-' + count + '" type="checkbox" checked="checked" value="Y" name="check"/></td>' +
+                                        '</tr>';
+                                }
                             }
-                        } else {
-                            for (var i = 0; i < result.length; i++) {
-                                /* 추후 삭제 */
-                                var prod_name = result[i].prod_id.toString();
-                                var orderid = result[i].order_id_num.toString();
-                                /* 추후 삭제 */
-                                var date = result[i].sch_id.toString();
-                                var year = date.substring(3, 7);
-                                var month = date.substring(7, 9);
-                                var day = date.substring(9, 11);
-                                date = year + '-' + month + '-' + day;
-                                var count = i + 1;
-                                innerHTML += '<tr>' +
-                                    '<input type="hidden" class="order_id" value="' + result[i].order_id + '" />' +
-                                    '<input type="hidden" class="sch_id" value="' + result[i].sch_id + '" />' +
-                                    '<td scope="row">' + count + '</td>' +
-                                    '<td>' + date + '</td>' +
-                                    '<td>' + orderid + '</td>' +
-                                    '<td>' + prod_name + '</td>' +
-                                    '<td><input class="checkbox" id="accept-' + count + '" type="checkbox" checked="checked" value="Y" name="check"/></td>' +
-                                    '</tr>';
+                            $('#order_body').html(innerHTML);
+                        } /* data ajax */
+                    }).done(function(d) {
+                        $('input:checkbox[name="check"]').on('change', function() {
+                            if ($(this).val() == 'Y') {
+                                $(this).val('N');
+                            } else {
+                                $(this).val('Y');
                             }
-                        }
-                        $('#order_body').html(innerHTML);
-                    } /* data ajax */
-                }).done(function(d) {
-                    $('input:checkbox[name="check"]').on('change', function() {
-                        if ($(this).val() == 'Y') {
-                            $(this).val('N');
-                        } else {
-                            $(this).val('Y');
-                        }
-                    })
-                });
+                        })
+                    });
             } /* result ajax */
         });
 

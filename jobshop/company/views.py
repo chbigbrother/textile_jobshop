@@ -32,7 +32,7 @@ def home(request):
 
 # 설비정보검색 company Facility view HTML
 def comp_list_view(request):
-    template_name = 'textile/company/comp_fac_list.html'
+    template_name = 'textile/company/comp_fac_list.js'
     date = datetime.datetime.today() - timedelta(days=3)
     comp_list = Facility.objects.filter(comp_id=request.user.groups.values('id')[0]['id'])
     information = Information.objects.get(comp_id=request.user.groups.values('id')[0]['id'])
@@ -58,12 +58,53 @@ def comp_list_view(request):
     return render(request, template_name, date)
 def comp_evaluate(request):
     template_name = 'textile/company/evaluate.html'
+    group = request.user.groups.values_list('name', flat=True).first()
+    username = request.user
+    result_list = []
+    if group == '구매자':
+        ord_list = OrderSchedule.objects.filter(order_id__cust_name=username, use_yn='Y')
+        for i in range(len(ord_list.values())):
+            comp_info = Schedule.objects.get(sch_id=ord_list[i].sch_id_id)
+            comp_info = comp_info.comp_id_id
+            information = Information.objects.filter(comp_id=comp_info)
+
+            for j in range(len(information.values())):
+                result = {}
+                result['comp_name'] = information[j].comp_name
+                result['credibility'] = information[j].credibility
+                result['address'] = information[j].address
+                result['contact'] = information[j].contact
+                result['email'] = information[j].email
+                result_list.append(result)
+
+    else:
+        comp_list = Facility.objects.filter(comp_id=request.user.groups.values('id')[0]['id'])
+        information = Information.objects.filter(comp_id=request.user.groups.values('id')[0]['id'])
+
+        for j in range(len(information.values())):
+            result = {}
+            result['comp_name'] = information[j].comp_name
+            result['credibility'] = information[j].credibility
+            result['address'] = information[j].address
+            result['contact'] = information[j].contact
+            result['email'] = information[j].email
+            result_list.append(result)
+
 
     date = {
-
+        "comp_list": result_list,
         'path': '회사정보 / 평가'
     }
     return render(request,template_name, date)
+
+def comp_fac_category(request):
+    template_name = 'textile/company/comp_fac_category.html'
+    category_list = FCategory.objects.filter(comp_id=request.user.groups.values('id')[0]['id'])
+    data = {
+        'path': '회사정보 / 설비카테고리',
+        'category_list' : category_list
+    }
+    return render(request, template_name, data)
 
 # 설비현황검색 company production view HTML
 def comp_production_view(request):
@@ -216,6 +257,37 @@ def comp_production_search(request):
 
     return sch_date_from.strftime("%Y-%m-%d"), sch_date_to.strftime("%Y-%m-%d"), result_list
 
+# 카테고리정보수정
+def fac_category_edit(request):
+    if request.method == 'POST':
+        request = json.loads(request.body)
+
+    cat_id = request['cat_id']
+    cat_name = request['cat_name']
+    user_info = request['user_info']
+
+
+    if len(cat_id) > 0:
+        cat_lists = FCategory.objects.get(fac_cat_id=cat_id)
+        cat_lists.fac_cat_name = cat_name
+        cat_lists.comp_id = Information.objects.get(comp_id=user_info)
+        cat_lists.save();
+    else:
+        cat_lists = FCategory.objects.all().order_by('fac_cat_id').last()
+        if cat_lists is None or not cat_lists:
+            int_id = 0
+        else:
+            int_id = cat_lists.fac_cat_id[6:]
+        str_id = id_generate('F_CAT_', int_id)
+
+        FCategory.objects.update_or_create(
+            fac_cat_id=str_id,
+            fac_cat_name=cat_name,
+            comp_id=Information.objects.get(comp_id=user_info)
+        )
+
+    return JsonResponse({"message": 'success'})
+
 # 설비정보수정
 def fac_list_edit(request):
     if request.method == 'POST':
@@ -262,7 +334,7 @@ def comp_product_view(request):
     template_name = 'textile/company/comp_product_list.html'
     user = auth.get_user(request)
     group = request.user.groups.values_list('name', flat=True).first()
-    if group == 'customer':
+    if group == '구매자':
         comp_list = Product.objects.all()
     else:
         comp_list = Product.objects.filter(comp_id=request.user.groups.values('id')[0]['id'])

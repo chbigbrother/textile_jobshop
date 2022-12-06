@@ -30,6 +30,7 @@ class Schedule(models.Model):
     prod_id = models.CharField(max_length=120)
     order_id_num = models.CharField(max_length=120)
     facility_id = models.ForeignKey("Facility", related_name="facilityId", on_delete=models.CASCADE, db_column="facility_id")  # 회사아이디
+    order_id = models.ForeignKey("order.OrderList", related_name="orderId", on_delete=models.CASCADE, db_column="order_id")
     created_at = models.DateTimeField(auto_now_add=True)  # 생성일자
     sch_color = models.CharField(max_length=50, null=False)
     x_axis_1 = models.FloatField(null=False)
@@ -57,3 +58,4 @@ class Product(models.Model):
 class FCategory(models.Model):
     fac_cat_id = models.CharField(max_length=120, primary_key=True)
     fac_cat_name = models.CharField(max_length=120)
+    comp_id = models.ForeignKey("Information", related_name="company_id_2", on_delete=models.CASCADE, db_column="comp_id")

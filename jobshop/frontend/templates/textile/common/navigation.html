@@ -108,7 +108,7 @@
                 <div class="dropdown-menu">
                   <div class="dropdown-menu-columns">
                     <div class="dropdown-menu-column">
-                      <a class="dropdown-item {% if request.resolver_match.url_name == 'textile.company.product' %} active {% endif %}" href="/textile/company/product/regist/" >
+                      <a class="dropdown-item {% if user.groups.all.0.name == '구매자' %} none {% endif %} {% if request.resolver_match.url_name == 'textile.company.product' %} active {% endif %}" href="/textile/company/product/regist/" >
                         제품 등록
                       </a>
                       <a class="dropdown-item {% if request.resolver_match.url_name == 'textile.company.product.view' %} active {% endif %}" href="/textile/company/product/search/" >
@@ -133,7 +133,8 @@
                   </a>
                 </div>
               </li>
-              <li class="nav-item dropdown {% if user.groups.all.0.name == '구매자' %} none {% endif %} {% if request.resolver_match.url_name == 'textile.company' or request.resolver_match.url_name == 'textile.company.index' or request.resolver_match.url_name == 'textile.company.list' or request.resolver_match.url_name == 'textile.company.facility' %} active {% endif %}">
+              <li class="nav-item dropdown
+              {% if request.resolver_match.url_name == 'textile.company' or request.resolver_match.url_name == 'textile.company.index' or request.resolver_match.url_name == 'textile.company.list' or request.resolver_match.url_name == 'textile.company.category' or request.resolver_match.url_name == 'textile.company.facility' %} active {% endif %}">
                 <a class="nav-link dropdown-toggle" href="#navbar-layout" data-bs-toggle="dropdown" data-bs-auto-close="outside" role="button" aria-expanded="false" >
                   <span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/layout-2 -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><rect x="4" y="4" width="6" height="5" rx="2" /><rect x="4" y="13" width="6" height="7" rx="2" /><rect x="14" y="4" width="6" height="7" rx="2" /><rect x="14" y="15" width="6" height="5" rx="2" /></svg>
@@ -145,6 +146,9 @@
                 <div class="dropdown-menu">
                   <div class="dropdown-menu-columns">
                     <div class="dropdown-menu-column">
+                      <a class="dropdown-item {% if user.groups.all.0.name == '구매자' %} none {% endif %} {% if request.resolver_match.url_name == 'textile.company.category' %} active {% endif %}" href="/textile/company/facility/category/" >
+                        설비카테고리
+                      </a>
                       <a class="dropdown-item {% if user.groups.all.0.name == '구매자' %} none {% endif %} {% if request.resolver_match.url_name == 'textile.company.index' %} active {% endif %}" href="/textile/company/" >
                         설비정보관리
                       </a>

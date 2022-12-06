@@ -67,16 +67,16 @@
 <!--    <script src="/static/js/dlabnav-init.js"></script>-->
 <script>
     $(function(){
-
         $('#loginBtn').on('click',function(){
             if ($('#basic_checkbox_1').prop('checked') == true){
                 $('#username').val('testprovider');
                 $('#password').val('test123!');
                 $('form').submit();
-            }
-            if ($('#basic_checkbox_2').prop('checked') == true){
+            } else if ($('#basic_checkbox_2').prop('checked') == true){
                 $('#username').val('testbuyer');
                 $('#password').val('test123!');
+                $('form').submit();
+            } else{
                 $('form').submit();
             }
         });

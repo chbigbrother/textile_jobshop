@@ -486,11 +486,12 @@ def generate_data(request):
     # POST 로 받아온 값 dict 로 담기
     if request.method == 'POST':
         request = json.loads(request.body)
+        ord_id = request['ord_id']
         ord = request['ord']    # 제품명
         fac = request['fac']    # 기계호기
         amt = request['amt']    # 오더 수량
         work_str = request['work_str_date']        # 작업시작일자
-        work_exp_date = request['work_exp_date']                # 작업종료일자
+        work_exp_date = request['work_exp_date']   # 작업종료일자
 
     # 제품 정보 가져오기
     mn_list = []
@@ -563,6 +564,7 @@ def generate_data(request):
                     facility_id=Facility.objects.get(facility_name=y_axis),
                     comp_id=Information.objects.get(comp_id=user_id),
                     prod_id=product_name_list[i].prod_id,
+                    order_id =OrderList.objects.get(order_id=ord_id[i]),
                     count=int(count) + 1,
                     sch_color=s_list[j][1],
                     order_id_num=s_list[j][2],  # 추후 오더 데이터에서 가져오기
@@ -703,9 +705,10 @@ def available_list(request):
                 result.append(list(schedule_list.values()))
 
             for i in range(len(result)):
+                print(result[i][0])
                 product_ids=result[i][0]['prod_id']
                 product_id=Product.objects.get(prod_id=product_ids)
-                order_id=OrderList.objects.filter(prod_id=product_ids)
+                order_id=OrderList.objects.filter(prod_id=product_ids, order_id=result[i][0]['order_id_id'])
                 comma_list = []
                 for j in order_id.values():
                     comma_list.append(j['order_id'])
@@ -784,24 +787,28 @@ def fixed_order(request):
             )
     else:
         orders = request['order_list']
+        prices = request['price_list']
+        schedules = request['sch_list']
+
         if len(fixed_list(request, user_group)) > 0:
             result = fixed_list(request, user_group)
             for sch in result:
                 OrderSchedule.objects.filter(sch_id=sch).update(use_yn='N')
 
         # 오더 아이디로 넘어옴
-        for ord in orders:
-            orders = Schedule.objects.filter(sch_id=ord)  # order_id 나중에 order_list 에서 조회해 오기
+        for ord in range(len(orders)):
+            orders = Schedule.objects.filter(sch_id=schedules[ord])  # order_id 나중에 order_list 에서 조회해 오기
             if not orders: # 최초 수락일 때,
                 # OrderSchedule.objects.filter(sch_id=ord).update(use_yn='Y')
-                OrderSchedule.objects.filter(sch_id=ord).update(use_yn='N')
+                OrderSchedule.objects.filter(sch_id=orders.sch_id).update(use_yn='N', offer_price=prices[ord])
             else: # 최초 수락이 아닐 때,
-                for i in orders:
-                    order_ids = OrderList.objects.filter(prod_id=i.prod_id)
+                for ord in range(len(orders)):
+                    order_ids = OrderList.objects.filter(prod_id=orders[ord].prod_id)
                     for j in order_ids:
                         OrderSchedule.objects.update_or_create(
                             order_id=OrderList.objects.get(order_id=j.order_id),
-                            sch_id=Schedule.objects.get(sch_id=i.sch_id),
+                            sch_id=Schedule.objects.get(sch_id=schedules[ord]),
+                            offer_price=prices[ord],
                             # use_yn='Y'
                             use_yn='N'
                         )
@@ -841,7 +848,6 @@ def confirmed_order(request):
                 final_result.append(list(i))
     else:
         for i in confirmed_list:
-
             final_result.append(list(i))
 
     def json_default(value):

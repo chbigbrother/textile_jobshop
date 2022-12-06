@@ -33,7 +33,7 @@
                             <p class="avg_rpm">평균 rpm code : <span class="item">{{comp.rpm}}</span> </p>
                             <p class="daily_prod_rate">일일평균생산량 : <span class="item">{{comp.daily_prod_rate}}</span></p>
                             <p class="cost">평균 yd 당 단가 : <span class="item"> {{comp.cost}} 원 </span></p>
-                            <p class="text-content {% if user.groups.all.0.name == 'customer' %} none {% endif %}">
+                            <p class="text-content {% if user.groups.all.0.name == '구매자' %} none {% endif %}">
                                 관리 &nbsp;
                                 <span class="item action-buttons">
                                     <a href="#"  id="edit_{{ comp.prod_id }}" class="btn btn-secondary light mr-2 editContBtn">

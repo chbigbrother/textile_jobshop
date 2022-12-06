@@ -13,6 +13,8 @@ urlpatterns = [
     path('product/list/edit/', prod_list_edit, name='company.prod_list_edit'),
 
     path('facility/list/', comp_production_view, name='textile.company.facility'),
+    path('facility/category/', comp_fac_category, name='textile.company.category'),
+    path('facility/category/edit/', fac_category_edit, name='textile.company.fac_category_edit'),
     path('facility/list/edit/', fac_list_edit, name='company.fac_list_edit'),
     path('facility/list/all/', comp_facility_all, name='company.comp_facility_all'),
     path('csv/facility/download/', comp_facility_csv_download, name='company.comp_facility_csv_download'),

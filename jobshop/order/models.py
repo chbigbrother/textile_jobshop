@@ -20,6 +20,7 @@ class OrderSchedule(models.Model):
     idx = models.AutoField(primary_key=True)  # 번호
     sch_id = models.ForeignKey("company.Schedule", on_delete=models.CASCADE, db_column="sch_id")
     order_id = models.ForeignKey("OrderList", related_name="orderlist", on_delete=models.CASCADE, db_column="order_id")
+    offer_price = models.FloatField(max_length=100)
     use_yn = models.CharField(max_length=1)  # 확정 여부
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
