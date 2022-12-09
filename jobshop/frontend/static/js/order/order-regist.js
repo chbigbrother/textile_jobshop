@@ -554,7 +554,7 @@ function drawScreen() {
     progressSteps(step);
 
     $(".first-next-btn").click(function(){
-        location.href="/textile/order/list/";
+        location.href="/textile/order/list/?orderStatus=0";
         /*
         $.ajax({
             url: "/textile/order/registered/list/",

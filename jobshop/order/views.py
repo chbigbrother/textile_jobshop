@@ -129,7 +129,8 @@ def order_list_query(request):
             sch_date_to = datetime.datetime.today()
             result_list = OrderList.objects.filter(sch_date__gte=date.strftime("%Y%m%d"), order_status=orderStatus,
                                                   sch_date__lte=datetime.datetime.today().strftime("%Y%m%d")).filter(cust_name=user_name)
-
+            for i in result_list:
+                i.ord_status = int(orderStatus)
     elif group == 'admin':
         if 'dateFrom' in request.GET:
             sch_date_from = datetime.datetime.strptime(request.GET['dateFrom'], "%Y-%m-%d")
