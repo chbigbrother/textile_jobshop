@@ -12,6 +12,7 @@ from fileutils.models import FileUploadCsv as fileUploadCsv
 from .models import *
 from order.models import *
 from common.views import id_generate, date_str, comma_str, money_count, regex
+from collections import Counter
 import pandas as pd
 import json, csv, datetime
 from urllib.parse import quote
@@ -61,13 +62,13 @@ def comp_evaluate(request):
     group = request.user.groups.values_list('name', flat=True).first()
     username = request.user
     result_list = []
+    comp_list = {}
     if group == '구매자':
-        ord_list = OrderSchedule.objects.filter(order_id__cust_name=username, use_yn='Y')
+        ord_list = OrderSchedule.objects.filter(order_id__cust_name=username, use_yn='Y', order_id__order_status=1)
         for i in range(len(ord_list.values())):
             comp_info = Schedule.objects.get(sch_id=ord_list[i].sch_id_id)
             comp_info = comp_info.comp_id_id
-            information = Information.objects.filter(comp_id=comp_info)
-
+            information = Information.objects.filter(comp_id=comp_info).order_by('comp_id')
             for j in range(len(information.values())):
                 result = {}
                 result['comp_name'] = information[j].comp_name
@@ -76,6 +77,7 @@ def comp_evaluate(request):
                 result['contact'] = information[j].contact
                 result['email'] = information[j].email
                 result_list.append(result)
+        # 회사 중복조회 방지 필요
 
     else:
         comp_list = Facility.objects.filter(comp_id=request.user.groups.values('id')[0]['id'])
@@ -339,7 +341,7 @@ def comp_product_view(request):
     else:
         comp_list = Product.objects.filter(comp_id=request.user.groups.values('id')[0]['id'])
     for i in comp_list:
-        i.cost = money_count(i.cost)
+        i.cost = money_count(int(i.cost))
     date = datetime.datetime.today() - timedelta(days=3)
     date = {
         "comp_list": comp_list,

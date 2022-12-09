@@ -59,14 +59,8 @@ def date_plus(datefrom, dateto):
     return date_diff
 
 def money_count(data):
-    data = str(int(data))
-    cost = ''
-    count = 0
-    for i in range(len(data)):
-        count += 1;
-        cost += data[i]
-        if count % 3 == 2 and i is not len(data) - 1:
-            cost += ','
+    cost = format(data, ',d')
+
     return cost
 
 def regex(data):

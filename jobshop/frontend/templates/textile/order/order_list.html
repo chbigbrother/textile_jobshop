@@ -17,9 +17,10 @@
                                 <label>주문현황</label>
                             </div>
                             <div class="col-lg-2 col-md-4 " style="margin-right: 2rem;">
-                                <select class="form-control text-center" type="text" name="orderStatus" id="orderStatus" value="{{ orderStatus }}">
-                                    <option value="1">업체생산중</option>
-                                    <option value="2">업체확정대기</option>
+                                <input class="orderStatus" type="hidden" value="{{ orderStatus }}">
+                                <select class="form-control text-center" name="orderStatus" id="orderStatus">
+                                    <option value="2">업체생산중</option>
+                                    <option value="1">업체확정대기</option>
                                     <option value="0">업체선택요청</option>
                                 </select>
                             </div>
@@ -79,26 +80,16 @@
                         <td class="email">{{order.email}}</td>
                         <td class="order_id" style="display:none;">{{order.order_id}}</td>
                         <td class="ord_status">
-                            {% if order.ord_status == '1' %}
+                            {% if order.ord_status == 2 %}
                                 <span class="badge badge-success badge-lg light"> 업체생산중 </span>
-                            {% elif order.ord_status == '0' %}
+
+                            {% elif order.ord_status == 0 %}
                                 <a href="#" class="compSelectRq">
                                     <span class="badge badge-danger badge-lg light">업체선택요청
 
                                     </span>
                                 </a>
-                            <!-- {% if user.groups.all.0.name == 'customer' or user.groups.all.0.name == 'admin' %}
-                                <a href="#" class="compSelectRq">
-                                    <span class="badge badge-danger badge-lg light">업체선택요청
-
-                                    </span>
-                                </a>
-                                {% else %}
-                                <span class="badge badge-danger badge-lg light">업체매칭대기
-
-                                </span>
-                                {% endif %} -->
-                            {% elif order.ord_status == '2' %}
+                            {% elif order.ord_status == 1 %}
                                 <a href="#" class="compSelectRq">
                                     <span class="badge badge-danger badge-lg light">업체확정대기
 
@@ -110,7 +101,7 @@
                             <div class="action-buttons">
                                 {% if user.groups.all.0.name == '구매자' and order.ord_status == 1 %}
                                 <!--<a href="#" class="btn btn-warning light mr-2" id="edit_{{ order.prod_id.prod_name }}">-->
-                                <a href="#" class="btn btn-warning light mr-2 rateComp" id="edit_{{ order.prod_id.prod_name }}">
+                                <a href="/textile/company/evaluate/" class="btn btn-warning light mr-2 rateComp" id="edit_{{ order.prod_id.prod_name }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
                                         <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
                                             <rect x="0" y="0" width="24" height="24"></rect>
@@ -222,44 +213,7 @@
     </div>
 </div>
 <!-- 관리 Modal END -->
-<!-- ***************************************************************** 평가 Modal ***************************************************************** -->
-<div class="modal fade" id="rateModal" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                    <h4 class="modal-title" id="rateModalLabel">업체 평가</h4>
-                    <button class="close" type="button" data-bs-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-            <div class="modal-body">
-                <div class="row pknu-modal-row">
-                    <div class="col-md-3" style="margin-right:5rem;"><label for="service" class="pt-2">서비스 만족도</label></div>
-                    <div class="col-md-6" id="service">
-                        <div class="star-rating">
-                          <input type="radio" id="5-stars" name="rating" value="5" />
-                          <label for="5-stars" class="star">&#9733;</label>
-                          <input type="radio" id="4-stars" name="rating" value="4" />
-                          <label for="4-stars" class="star">&#9733;</label>
-                          <input type="radio" id="3-stars" name="rating" value="3" />
-                          <label for="3-stars" class="star">&#9733;</label>
-                          <input type="radio" id="2-stars" name="rating" value="2" />
-                          <label for="2-stars" class="star">&#9733;</label>
-                          <input type="radio" id="1-star" name="rating" value="1" />
-                          <label for="1-star" class="star">&#9733;</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer" id="ratefooter">
-                <a href="#" id="submitBtn" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
-                    <i class="far fa-paper-plane fa-sm text-white-50"></i> 제출
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- 평가 Modal END -->
+
 <!-- ***************************************************************** 기업 선택 Modal ***************************************************************** -->
 <div class="modal fade" id="compSelectRqModal" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -281,7 +235,7 @@
                 <button type="button" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm" data-bs-dismiss="modal">
                     <i class="far fa-window-close fa-sm text-white-50"></i> 취소
                 </button>
-                <a href="#" id="compSelectSubmitBtn" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                <a href="#" id="compSelectSubmitBtn" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm {% if user.groups.all.0.name == '생산자' %} none {% endif %}">
                     <i class="far fa-paper-plane fa-sm text-white-50"></i> 제출
                 </a>
             </div>
@@ -325,6 +279,9 @@
                disableMobile: true,
                defaultDate: $('#dateFrom').val()
         });
+
+        $("#orderStatus").val($('.orderStatus').val()).prop("selected", true);
+
 
         $('.rateComp').on('click', function(){
             $('#rateModal').modal('show');
@@ -471,7 +428,6 @@
                                             '</div>' +
                                         '</li>';
                     }
-                    console.log(innerHTML);
                     $('.timeline').html(innerHTML);
                 }
             });

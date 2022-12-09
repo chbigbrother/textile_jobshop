@@ -779,12 +779,10 @@ def fixed_order(request):
         comp_name = request['comp_name']    # 회사명
         order_id = request['order_id']  # 오더 아이디
         order_ids = OrderSchedule.objects.filter(order_id=order_id)
+
         for j in order_ids:
-            OrderSchedule.objects.update_or_create(
-                order_id=j.order_id,
-                sch_id=j.sch_id,
-                use_yn='Y'
-            )
+            OrderSchedule.objects.filter(sch_id=j.sch_id).update(use_yn='Y')
+
     else:
         orders = request['order_list']
         prices = request['price_list']
@@ -797,21 +795,22 @@ def fixed_order(request):
 
         # 오더 아이디로 넘어옴
         for ord in range(len(orders)):
-            orders = Schedule.objects.filter(sch_id=schedules[ord])  # order_id 나중에 order_list 에서 조회해 오기
-            if not orders: # 최초 수락일 때,
+            ords = OrderSchedule.objects.filter(sch_id_id=schedules[ord])  # order_id 나중에 order_list 에서 조회해 오기
+            if not ords: # 최초 수락일 때,
                 # OrderSchedule.objects.filter(sch_id=ord).update(use_yn='Y')
-                OrderSchedule.objects.filter(sch_id=orders.sch_id).update(use_yn='N', offer_price=prices[ord])
+                # OrderSchedule.objects.update_or_create(sch_id_id=orders.sch_id_id).update(use_yn='N', offer_price=prices[ord], order_status=0)
+                OrderSchedule.objects.update_or_create(
+                    order_id=OrderList.objects.get(order_id=orders[ord]),
+                    sch_id=Schedule.objects.get(sch_id=schedules[ord]),
+                    offer_price=prices[ord],
+                    # use_yn='Y'
+                    use_yn='N'
+                )
+                OrderList.objects.filter(order_id=orders[ord]).update(order_status=2)
             else: # 최초 수락이 아닐 때,
                 for ord in range(len(orders)):
-                    order_ids = OrderList.objects.filter(prod_id=orders[ord].prod_id)
-                    for j in order_ids:
-                        OrderSchedule.objects.update_or_create(
-                            order_id=OrderList.objects.get(order_id=j.order_id),
-                            sch_id=Schedule.objects.get(sch_id=schedules[ord]),
-                            offer_price=prices[ord],
-                            # use_yn='Y'
-                            use_yn='N'
-                        )
+                    order_ids = OrderList.objects.filter(sch_id=Schedule.objects.get(sch_id=schedules[ord])).update(use_yn='N',offer_price=prices[ord])
+
 
     return JsonResponse({"message": 'success'})
 
