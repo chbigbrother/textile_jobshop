@@ -757,7 +757,10 @@ def comp_avail_facility(request):
 
 # 회사별 전체 기계 조회
 def comp_facility_all(request):
-    comp_list = Product.objects.filter(comp_id=request.user.groups.values('id')[0]['id'])
+    if request.user.groups.values('id')[0]['id'] != "생산자":
+        comp_list = Product.objects.all()
+    else:
+        comp_list = Product.objects.filter(comp_id=request.user.groups.values('id')[0]['id'])
 
     def json_default(value):
         if isinstance(value, datetime.date):

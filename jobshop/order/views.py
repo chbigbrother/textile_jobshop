@@ -120,17 +120,21 @@ def order_list_query(request):
 
             date_from = request.GET['dateFrom'].replace('-', '')
             date_to = request.GET['dateTo'].replace('-', '')
+            order_list = OrderList.objects.filter(sch_date__gte=date_from, order_status=orderStatus).filter(sch_date__lte=date_to).filter(cust_name=user_name)
 
-            result_list = OrderList.objects.filter(sch_date__gte=date_from, order_status=orderStatus).filter(sch_date__lte=date_to).filter(cust_name=user_name)
-            for i in result_list:
-                i.ord_status = int(orderStatus)
         else:
             sch_date_from = date
             sch_date_to = datetime.datetime.today()
-            result_list = OrderList.objects.filter(sch_date__gte=date.strftime("%Y%m%d"), order_status=orderStatus,
+            order_list = OrderList.objects.filter(sch_date__gte=date.strftime("%Y%m%d"), order_status=orderStatus,
                                                   sch_date__lte=datetime.datetime.today().strftime("%Y%m%d")).filter(cust_name=user_name)
-            for i in result_list:
-                i.ord_status = int(orderStatus)
+        for i in order_list:
+            product = Product.objects.filter(prod_id=i.prod_id)
+            if len(product) > 0:
+                for j in product:
+                    if i.prod_id == j.prod_id:
+                        i.prod_id = j.prod_name
+                        i.ord_status = int(orderStatus)
+                        result_list.append(i)
     elif group == 'admin':
         if 'dateFrom' in request.GET:
             sch_date_from = datetime.datetime.strptime(request.GET['dateFrom'], "%Y-%m-%d")
