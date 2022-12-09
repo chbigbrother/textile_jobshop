@@ -433,6 +433,7 @@ function drawScreen() {
             }
         }
     });
+    /*
     for (var i=1; i<5; i++){
         if (i==step){
             innerHTML += '<li class="active" id="step'+ i + '">'+
@@ -441,7 +442,7 @@ function drawScreen() {
         } else{
             innerHTML += '<li id="step'+ i + '"><strong>Step ' + i + '</strong></li>';
         }
-    }
+    }*/
     var locations = "{{order_list}}";
 
     innerHTML+= '</ul>'+
@@ -493,8 +494,8 @@ function drawScreen() {
                         '</a>'+
                     '</div>'+
                     '<input type="button" name="next-step" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm next-step first-next-btn" value="다음" style="display:none !important;"/>'+
-                '</fieldset>'+
-                '<fieldset>'+
+                '</fieldset>';
+                /*'<fieldset>'+
                     '<div class="col-12">'+
                         '<div class="card">'+
                             '<div class="card-header">'+
@@ -548,11 +549,13 @@ function drawScreen() {
                         '</h2>'+
                     '</div>'+
                     '<input type="button" name="previous-step" class="previous-step btn btn-secondary active w-100 " value="이전" />'+
-                '</fieldset>';
+                '</fieldset>';*/
     $('#form').html(innerHTML);
     progressSteps(step);
 
     $(".first-next-btn").click(function(){
+        location.href="/textile/order/list/";
+        /*
         $.ajax({
             url: "/textile/order/registered/list/",
             method: "GET",
@@ -595,7 +598,7 @@ function drawScreen() {
 
                 $(".order-tbody").html(innerHTML);
             }
-        });
+        }); */
     });
 }
 

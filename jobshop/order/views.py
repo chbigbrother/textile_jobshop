@@ -25,6 +25,7 @@ from urllib.parse import quote
 # 수주관리등록 order management register HTML
 def home(request):
     template_name = 'textile/order/order_regist.html'
+
     context = {
         'path': '주문정보 / 주문 등록',
         'selected': 'ordermanagement'
@@ -79,14 +80,14 @@ def order_status(request):
     order_list = OrderList.objects.filter(sch_date=date.strftime("%Y%m%d")).filter(cust_name=user)
     result_dict = {}
     result_dict['user_name'] = user.username
-    if len(order_list) > 0:
-        dateFrom, dateTo, order_list = order_list_query(request)
-
-        for i in order_list:
-            order_status = OrderList.objects.get(order_id=i.order_id)
-            status = order_status.order_status
-            result_dict['status'] = status
-
+    # if len(order_list) > 0:
+    #     dateFrom, dateTo, order_list = order_list_query(request)
+    #     print(order_list)
+    #     for i in order_list:
+    #         order_status = OrderList.objects.get(order_id=i.order_id)
+    #         status = order_status.order_status
+    #         result_dict['status'] = status
+    result_dict['status'] = status
     def json_default(value):
         if isinstance(value, datetime.date):
             return value.strftime('%Y-%m-%d')
@@ -121,6 +122,8 @@ def order_list_query(request):
             date_to = request.GET['dateTo'].replace('-', '')
 
             result_list = OrderList.objects.filter(sch_date__gte=date_from, order_status=orderStatus).filter(sch_date__lte=date_to).filter(cust_name=user_name)
+            for i in result_list:
+                i.ord_status = int(orderStatus)
         else:
             sch_date_from = date
             sch_date_to = datetime.datetime.today()
@@ -165,7 +168,7 @@ def order_list_query(request):
         else:
             sch_date_from = date
             sch_date_to = datetime.datetime.today()
-            orderStatus = orderStatus
+            orderStatus = int(orderStatus)
             order_list = OrderList.objects.filter(order_status=orderStatus)
             #order_list = OrderList.objects.filter(sch_date__gte=date.strftime("%Y%m%d"),
              #                                     sch_date__lte=datetime.datetime.today().strftime("%Y%m%d"))
@@ -179,8 +182,8 @@ def order_list_query(request):
                                 i.prod_id = j.prod_name
                                 i.ord_status = int(orderStatus)
                                 result_list.append(i)
-    print(type(orderStatus))
-    return sch_date_from.strftime("%Y-%m-%d"), sch_date_to.strftime("%Y-%m-%d"), orderStatus, result_list # order_list
+
+    return sch_date_from.strftime("%Y-%m-%d"), sch_date_to.strftime("%Y-%m-%d"), int(orderStatus), result_list # order_list
 
 # 수주관리검색 수정
 def order_list_edit(request):
