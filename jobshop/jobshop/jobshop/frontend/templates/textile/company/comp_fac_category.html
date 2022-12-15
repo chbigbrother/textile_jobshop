@@ -1,0 +1,109 @@
+{% extends "textile/common/navigation.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">조회</h6>
+                <div class="dropdown no-arrow" >
+                    <a href="#" class="btn btn-info btn-icon-split modal-upload-btn">
+                        <span class="icon text-white-50">
+                            <i class="fas fa-check"></i>
+                        </span>
+                        <span class="text">카테고리 추가</span>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>순번</th>
+                                <th>카테고리명</th>
+                                <th style="text-align:center;">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cat in category_list %}
+                            <tr>
+                                <td>{{forloop.counter}}</td>
+                                <td class="cat_name_val">{{cat.fac_cat_name}}</td>
+                                <input class="user-info" type="hidden" value="{{ cat.comp_id_id }}">
+                                <td style="text-align:center;">
+                                    <a href="#" id="edit_{{ cat.fac_cat_id }}" class="edit_modal_show"><i class="far fa-edit {{ cat.fac_cat_id }}"></i></a>
+                                    <a href="#" id="delete_{{ cat.fac_cat_id }}" style="margin-left:10px;"><i class="fas fa-trash-alt"></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ***************************************************************** 관리 Modal ***************************************************************** -->
+<div class="modal fade" id="editModal" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-dialog2" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                    <h4 class="modal-title" id="exampleModalLabel">카테고리 관리</h4>
+                    <button class="close" type="button" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+            <div class="modal-body">
+                <div class="row pknu-modal-row">
+                    <div class="col-md-3"><label for="catname" class="pt-2">카테고리명</label></div>
+                    <div class="col-md-6" id="divCompName">
+                        <input class="form-control text-center" type="text" name="catname" id="catname" />
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer" id="htfooter">
+                <button type="button" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm" data-bs-dismiss="modal">
+                    <i class="far fa-window-close fa-sm text-white-50"></i> 취소
+                </button>
+                <a href="#" id="editBtn" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                    <i class="far fa-paper-plane fa-sm text-white-50"></i> 수정
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 관리 Modal END -->
+
+<!-- UploadModal -->
+<div class="modal fade" id="uploadModal" role="dialog" aria-labelledby="uploadModal" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-dialog2" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="exampleModalLabel">카테고리 등록</h4>
+                <button class="close" type="button" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+            </div>
+            <div class="modal-body">
+                <div class="row pknu-modal-row">
+                    <div class="col-md-3"><label class="pt-2" style="font-size:0.95rem;">카테고리명</label></div>
+                    <div class="col-lg-6">
+                        <input class="form-control text-center" type="text" name="cat_name" id="cat_name" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" id="modal-footer">
+                <button type="button" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm" data-bs-dismiss="modal">
+                    <i class="far fa-window-close fa-sm text-white-50"></i> 취소
+                </button>
+                <a class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" id="modal-upload">
+                    <i class="fas fa-upload fa-sm text-white-50"></i> 카테고리업로드
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- UploadModal -->
+<script src="/static/js/company/comp_fac_category.js"></script>
+{% endblock %}

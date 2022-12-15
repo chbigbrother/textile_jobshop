@@ -1,0 +1,101 @@
+<!doctype html>
+<!--
+* Tabler - Premium and Open Source dashboard template with responsive and high quality UI.
+* @version 1.0.0-beta5
+* @link https://tabler.io
+* Copyright 2018-2022 The Tabler Authors
+* Copyright 2018-2022 codecalm.net Paweł Kuna
+* Licensed under MIT (https://github.com/tabler/tabler/blob/master/LICENSE)
+-->
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1,
+            viewport-fit=cover"/>
+        <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+        <title>섬유공정시스템</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <!-- CSS files -->
+        <link href="/static/css/tabler.min.css" rel="stylesheet"/>
+        <link href="/static/css/tabler-flags.min.css" rel="stylesheet"/>
+        <link href="/static/css/tabler-payments.min.css" rel="stylesheet"/>
+        <link href="/static/css/tabler-vendors.min.css" rel="stylesheet"/>
+        <link href="/static/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="/static/js/flatpickr/flatpickr.css">
+        <link rel="stylesheet" type="text/css" href="/static/css/multiple-select/multiple-select.css">
+        <link rel="stylesheet" href="/static/css/css-loader/css-loader.css"/>
+        <link href="/static/css/demo.min.css" rel="stylesheet"/>
+        <link src="/static/vendor/fullcalendar/lib/main.css">
+        <link href="/static/vendor/calendar/core/main.css" rel="stylesheet" type="text/css">
+        <link href="/static/vendor/calendar/daygrid/main.css" rel="stylesheet" type="text/css">
+        <script type="text/javascript" src="https://rawgit.com/nnnick/Chart.js/v1.0.2/Chart.min.js"></script>
+        <style>
+            .side-expand-icon{
+                text-decoration: none;
+            }
+            .navbar ul li {
+                list-style: none;
+            }
+            .navbar  ul li a {
+                text-decoration: none;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+
+    <div class="wrapper">
+
+        {% block navigation %}
+
+        {% endblock %}
+
+    </div>
+    <!-- Libs JS -->
+    <!-- Core plugin JavaScript-->
+	<script src="/static/js/moment/moment.js"></script>
+    <!-- Tabler Core -->
+    <script src="/static/js/tabler.min.js"></script>
+    <script src="/static/js/demo.min.js"></script>
+    <script src="/static/js/index.js"></script>
+    <script src="/static/js/flatpickr/flatpickr.js"></script>
+    <script src="/static/js/flatpickr/flatpickr.ko.js"></script>
+    <script src="/static/js/multiple-select/multiple-select.js"></script>
+    <script src="/static/vendor/fullcalendar/lib/main.js"></script>
+    <script src="/static/vendor/calendar/core/main.js"></script>
+    <script src="/static/vendor/calendar/interaction/main.js"></script>
+    <script src="/static/vendor/calendar/daygrid/main.js"></script>
+    <!-- sweetalert 설치 후 사용가능 $ npm install sweetalert2 -->
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Page level custom scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js" integrity="sha512-UXumZrZNiOwnTcZSHLOfcTs0aos2MzBWHXOHOuB0J/R44QB0dwY5JgfbvljXcklVf65Gc4El6RjZ+lnwd2az2g==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/0.7.7/chartjs-plugin-zoom.js" integrity="sha512-qeclqxc+2KW7GtbmHcj/Ev5eBoYpPnuAcPqusYRIfvaC9OWHlDwu1BrIVPYvfNDG+SRIRiPIokiSvhlLJXDqsw==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/0.5.7/chartjs-plugin-annotation.min.js"></script>
+    <script>
+      $(function(){
+        var open = false;
+        $('.side-nav-item .nav-link-title').hide();
+        $('.expand-menu').on('click', function(){
+          if(open){
+            $('.navbar-vertical.navbar-expand-md').css('width', '6rem');
+            $('.side-nav-item').css('text-align', 'center');
+            $('.expand-menu').removeClass('open');
+            $('.side-nav-item .nav-link-title').hide();
+            $('.expand-menu').css('left', '80px');
+          } else{
+            $('.navbar-vertical.navbar-expand-md').css('width', '12rem');
+            $('.side-nav-item').css('text-align', 'left');
+            $('.expand-menu').addClass('open');
+            $('.side-nav-item .nav-link-title').show();
+            $('.expand-menu').css('left', '175px');
+          }
+          open = !open;
+        })
+
+      });
+
+    </script>
+
+    </body>
+</html>

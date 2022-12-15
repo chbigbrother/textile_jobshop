@@ -1,0 +1,140 @@
+{% extends "textile/common/navigation.html" %}
+{% block content %}
+<script>
+  $.ajaxSetup({
+    headers: { "X-CSRFToken": '{{csrf_token}}' }
+  });
+</script>
+<style>
+    div .ms-parent {
+        width: 100% !important;
+    }
+</style>
+<!-- Page Heading -->
+<div class="row">
+    <div class="col-xl-12 col-lg-12">
+        <div class="card shadow mb-4">
+            <!-- Card Header - Dropdown -->
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">스케줄 이력 차트 </h6>
+                <div class="dropdown no-arrow">
+                    <a href="#" id="activationSetting" class="btn btn-dark w-100">
+                        <i class="fas fa-download fa-sm text-white-50"></i> &nbsp;섬유 공정 스케쥴 실행
+                    </a>
+                </div>
+            </div>
+            <!-- Card Body -->
+            <div class="card-body chart-body">
+                <div class="chart-area">
+                    <canvas id="myAreaChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-12">
+        <!-- Circle Buttons -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">처리 가능 오더 리스트</h6>
+                <div class="dropdown no-arrow" id="sendBtn">
+                    <a href="#" onclick="sendSchedule()" id="sendSchedule" class="btn btn-dark w-100"><i class="fas fa-paper-plane">
+                    </i>&nbsp 전송</a>
+                </div>
+            </div>
+            <div class="card-body" id="order_list">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">번호</th>
+                            <th scope="col">오더일자</th>
+                            <th scope="col">오더번호</th>
+                            <th scope="col">제품명</th>
+                            <th scope="col">색상</th>
+                            <th scope="col">수락</th>
+                        </tr>
+                    </thead>
+                    <tbody id="order_body">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- 처리 가능 리스트 히스토리 -->
+    </div>
+</div>
+<!-- Area Chart -->
+
+<!-- ***************************************************************** activationSettingModal ***************************************************************** -->
+<!-- setting.txt 정보 입력 Modal START -->
+<div class="modal modal-blur fade" id="activationSettingModal" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="exampleModalLabel">작업 스케줄링 설정</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pknu-modal-body-overflow">
+                <div class="row sch-pknu-modal-row">
+                    <div class="col-md-3"><label for="ordDateFrom" class="pt-2">계약일자조회</label></div>
+                    <div class="col-md-4">
+                        <input type="date" class="form-control" id="ordDateFrom" aria-describedby="emailHelp" value="{{ dateFrom }}"  />
+                    </div>
+                    <div class="col-md-1">
+                    ~
+                    </div>
+                    <div class="col-md-4">
+                        <input type="date" class="form-control" id="ordDateTo" aria-describedby="emailHelp" value=""  />
+                    </div>
+                </div>
+
+                <div class="row sch-pknu-modal-row ord_hidden">
+                    <div class="col-md-3"><label class="pt-2">주문선택</label></div>
+                    <div class="col-md-9" id="divSelectOrder_old">
+                        <!-- <select class="form-control" name="select" multiple="multiple" id="selectOrder">
+
+                        </select> -->
+                    </div>
+                </div>
+                        <input class="form-control text-center" type="hidden" name="dateFrom" id="strDate" />
+            </div>
+            <div class="modal-footer" id="htfooter">
+                <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">
+                    <i class="far fa-window-close fa-sm text-white-50"></i> &nbsp; 취소
+                </button>
+                <a href="#" onclick="activate()" class="btn btn-primary ms-auto">
+                    <i class="far fa-paper-plane fa-sm text-white-50"></i> &nbsp; 스케쥴 실행
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- config.txt 정보 입력 Modal END -->
+
+<!-- ***************************************************************** confirmDataModal ***************************************************************** -->
+<div class="modal modal-blur fade" id="confirmDataModal" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">제안 가격, 작업 종료일자 정보</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pknu-modal-body-overflow" id="priceModalBody">
+
+
+            </div>
+            <div class="modal-footer" id="footer">
+                <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">
+                    <i class="far fa-window-close fa-sm text-white-50"></i> &nbsp; 취소
+                </button>
+                <a href="#" onclick="confirmSend()" class="btn btn-primary ms-auto">
+                    <i class="far fa-paper-plane fa-sm text-white-50"></i> &nbsp;확정 전달
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- confirmDataModal END -->
+
+<div id="css-loader" class="loader loader-default"></div>
+<script src="/static/js/schedule/schedule.js"></script>
+{% endblock %}
