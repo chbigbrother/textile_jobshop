@@ -120,7 +120,8 @@ function removeSchedule() {
 function activate() {
     $('#css-loader').addClass("is-active");
     var selected_fac_list = new Array();
-    for(var i=1; i<$('.ordamt').length+1; i++){
+
+    for(var i=0; i<$('.ordamt').length; i++){
         var selected_fac = new Array();
         $('.availfacnum_' + i).find(':selected').each(function(j){
             selected_fac.push($('.availfacnum_' + i).find(':selected')[j].innerText);
@@ -135,7 +136,6 @@ function activate() {
     var sch_ord_id = new Array();
     var str_arr = new Array();
     $('.ordamt').each(function(i){
-        console.log($('.ordamt')[i]);
         var cnt = $('.ordamt')[i].classList.length-1;
         var prod_name = $('.ordamt')[i].id;
         selected_ord_list.push(prod_name);
@@ -175,7 +175,7 @@ function activate() {
     obj.work_exp_date = arr; // $('#estDate').val();
 
     $.ajax({
-        url: '/textile/schedule/graph/csv/generate/', /* "{% url 'schedule:generate_data' %}",*/
+        url: '/textile/schedule/graph/csv//', /* "{% url 'schedule:generate_data' %}",*/
         data: JSON.stringify(obj),
         type: 'json',
         contentType: 'application/json',
@@ -244,6 +244,7 @@ $(function() {
             }
 
             var innerHTML = '';
+            var ordHTML = '';
             for (var i = 0; i < selected_ord.length; i++) {
                 var amt = selected_ord[i].className.split('_');
                 if(amt.length > 1){
@@ -276,6 +277,7 @@ $(function() {
                                         '</div>'+
                                     '</div>'+
                                 '</div>';
+                                ordHTML += '<input type="hidden" class="sch_ord_id" value="' + amt[3] + '">';
                     }
                 }
             }
@@ -287,6 +289,7 @@ $(function() {
             $(".availfacnum").multipleSelect({
                 filter: true
             });
+            $('.ord_hidden').append(ordHTML);
         }
 
     }
@@ -333,9 +336,9 @@ $(function() {
             innerHTML += '<select class="form-control" name="select" multiple="multiple" id="selectOrder">';
             for (var i = 0; i < result.length; i++) {
                 if (typeof result[i] !== 'undefined') {
-                    innerHTML += '<option id="'+ i + '" class="' + result[i].amount + "_" + result[i].avail_fac_cnt + "_" + result[i].prod_name + '_" value="' + result[i].prod_name + '">' + result[i].cust_name + '_' + result[i].prod_name + '_' + result[i].amount + ' yd' +
+                    innerHTML += '<option id="'+ i + '" class="' + result[i].amount + "_" + result[i].avail_fac_cnt + "_" + result[i].prod_name + "_" + result[i].order_id + '_" value="' + result[i].prod_name + '">' + result[i].cust_name + '_' + result[i].prod_name + '_' + result[i].amount + ' yd' +
                     ' 요청기한 ' + result[i].exp_date + ' </option>';
-                    ordHTML += '<input type="hidden" class="sch_ord_id" value="' + result[i].order_id + '">';
+                    // ordHTML += '<input type="hidden" class="sch_ord_id" value="' + result[i].order_id + '">';
                 }
             }
         } else {
@@ -345,7 +348,7 @@ $(function() {
         $("#selectOrder").multipleSelect({
             filter: true
         });
-        $('.ord_hidden').append(ordHTML);
+        // $('.ord_hidden').append(ordHTML);
         return;
     }
     // 주문일자에 따른 수주 리스트 불러오기 END

@@ -324,10 +324,11 @@ def monthly_confirmed_order(request):
 
 # draw Gantt Chart data
 def draw_graph(request):
+
     count = Schedule.objects.filter(comp_id=request.user.groups.values('id')[0]['id'],
                                     created_at__year=now.year, created_at__month=now.month, created_at__day=now.day)
     count = count.aggregate(Max('count'))
-
+    print('count::', count)
     for i in Group.objects.all():
         for j in Group.objects.filter(name=i).values():
             schedule_list = Schedule.objects.filter(count=count['count__max'],
@@ -476,7 +477,7 @@ def draw_graph(request):
 def generate_data(request):
     # 회사 아이디를 얻기 위한 유저 정보
     user_id = request.user.groups.values('id')[0]['id']
-
+    now = datetime.datetime.now();
     # generate data set in .txt
     data = open("./schedule/cases/scheduling_set.txt", "w", newline="", encoding="UTF-8")
     product_list = []   # 제품 리스트 (Queryset 담기)
@@ -503,8 +504,8 @@ def generate_data(request):
     data.writelines('{0} {1} \n'.format(len(ord), int(max(mn_list).replace('호기', '').split('#')[1]) - 100))
 
     for i in range(len(ord)):
-        print("schedule info :: ", ord[i], user_id)
-        product = Product.objects.filter(prod_name=ord[i])[0]
+        product = Product.objects.get(prod_name=ord[i], comp_id_id=user_id)
+        print(product)
         product_name = product.prod_name
         dpr = (product.rpm * 40 * 0.95) // product.density
         col_string = ''

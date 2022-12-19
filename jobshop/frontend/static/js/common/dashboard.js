@@ -21,12 +21,19 @@ var customer_img = ['<img src="https://img.icons8.com/external-phatplus-lineal-c
 $(function(){
     const today = moment();
     function progress(from, to){
-        var progress_init = to - from;
-        var progress_now = to - today.format('YYYYMMDD');
+        var t = to.replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
+        var f = from.replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
+        t = new Date(t);
+        f = new Date(f);
+        var distance = t.getTime() - f.getTime();
+        var d = Math.floor(distance / (1000 * 60 * 60 * 24)+1);
+        var progress_init = d;
+        var progress_now = (new Date(today.format('YYYY-MM-DD')).getTime()) - f.getTime();
+        progress_now = Math.floor(progress_now / (1000 * 60 * 60 * 24)+1);
         if (progress_now == 0) {
             var process_percent = '100';
         } else{
-            var process_percent = parseInt(((progress_init - progress_now) / progress_init)*100).toString();
+            var process_percent = parseInt((progress_now * 100) / progress_init).toString();
         }
         if (process_percent==0) { var badge = 'badge badge-pill badge-warning'; var label='생산 준비 중';}
         if (process_percent<100) { var badge = 'badge badge-pill badge-secondary'; var label='생산 중';}
@@ -108,8 +115,11 @@ $(function(){
                                                         '<div>' +
                                                             '<h3 class="fs-24 font-w600 mb-0">주문자 : ' + content_data.cust_name + '</h3>' +
                                                             '<span class="text-primary d-block mb-4">요청기한 : ' + dateformat(content_data.exp_date) + '</span>' +
-                                                            '<span>오더번호 : ' + content_data.order_id + '</span>' +
+                                                            '<span>오더번호 : ' + content_data.order_id + '</span><br/>' +
+                                                            '<span>제품명 : ' + content_data.textile_name + '</span><br/>' +
+                                                            '<span>계약일자 : ' + dateformat(content_data.sch_date) + '</span>' +
                                                             '<span class="text-primary d-block mb-4">수량 : ' + content_data.amount + 'yd</span>' +
+                                                            '<span>제품명 : ' + content_data.textile_name + '</span>' +
                                                         '</div>' +
 
                                                     '</div>';
@@ -167,8 +177,8 @@ $(function(){
                                                             '</div>' +
                                                         '</div>' +
                                                         '<div class="d-flex align-items-end mt-2 pb-4 justify-content-between" style="position:relative">' +
-                                                            '<span class="fs-14 font-w500">생산 시작일 <br/>' + dateformat(content_data.work_str_date) + '</span>' +
-                                                            '<span class="fs-14 font-w500" style="text-align:right;">생산 종료 계획일 <br/>' + dateformat(content_data.work_end_date) + '</span>' +
+                                                            '<span class="fs-14 font-w500">생산 시작일자 <br/>' + dateformat(content_data.work_str_date) + '</span>' +
+                                                            '<span class="fs-14 font-w500" style="text-align:right;">생산 종료 계획일자 <br/>' + dateformat(content_data.work_end_date) + '</span>' +
                                                             '<span class="fs-16 progress-fs" style="position:absolute;top:-50px; right:0;"><span class="text-black pe-2"></span>' + process_percent + '%</span>' +
                                                         '</div>' +
                                                     '</div>' +

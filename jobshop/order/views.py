@@ -685,7 +685,7 @@ def avail_comps(request):
         result_dict['order_id'] = i.order_id_id
         result_dict['credibility'] = cred.credibility
         result_list.append(result_dict)
-
+    print(result_list)
     def json_default(value):
         if isinstance(value, datetime.date):
             return value.strftime('%Y-%m-%d')
