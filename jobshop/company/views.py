@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.contrib import auth
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.encoding import smart_str
+from django.db.models import Count
 from openpyxl import load_workbook
 from fileutils.forms import FileUploadCsv
 from fileutils.models import FileUploadCsv as fileUploadCsv
@@ -22,10 +23,12 @@ from datetime import timedelta
 def home(request):
     template_name = 'textile/company/comp_regist.html'
     comp_list = Facility.objects.all()
+    category_list = FCategory.objects.filter(comp_id=request.user.groups.values('id')[0]['id'])
 
     date = datetime.datetime.today() - timedelta(days=3)
     date = {
         "comp_list": comp_list,
+        "category_list": category_list,
         'dateFrom': date.strftime("%Y-%m-%d"),
         'path': '회사정보 / 설비정보관리'
     }
@@ -57,19 +60,25 @@ def comp_list_view(request):
         'path': '회사정보 / 설비정보검색'
     }
     return render(request, template_name, date)
+
 def comp_evaluate(request):
     template_name = 'textile/company/evaluate.html'
     group = request.user.groups.values_list('name', flat=True).first()
     username = request.user
     result_list = []
     comp_list = {}
+
     if group == '구매자':
         ord_list = OrderSchedule.objects.filter(order_id__cust_name=username, use_yn='Y', order_id__order_status=2)
-
+        comp_infos = []
         for i in range(len(ord_list.values())):
             comp_info = Schedule.objects.get(sch_id=ord_list[i].sch_id_id)
             comp_info = comp_info.comp_id_id
-            information = Information.objects.filter(comp_id=comp_info).order_by('comp_id')
+            comp_infos.append(comp_info)
+        set_comp_info = set(comp_infos)
+        comp_infos = list(set_comp_info)
+        for i in range(len(comp_infos)):
+            information = Information.objects.filter(comp_id=comp_infos[i])
             for j in range(len(information.values())):
                 result = {}
                 result['comp_name'] = information[j].comp_name
@@ -82,16 +91,17 @@ def comp_evaluate(request):
 
     else:
         comp_list = Facility.objects.filter(comp_id=request.user.groups.values('id')[0]['id'])
-        information = Information.objects.filter(comp_id=request.user.groups.values('id')[0]['id'])
+        information = Information.objects.filter(comp_id=request.user.groups.values('id')[0]['id']).values().annotate(Count('comp_id'))
 
-        for j in range(len(information.values())):
+        for j in range(len(information)):
             result = {}
-            result['comp_name'] = information[j].comp_name
-            result['credibility'] = information[j].credibility
-            result['address'] = information[j].address
-            result['contact'] = information[j].contact
-            result['email'] = information[j].email
+            result['comp_name'] = information[j]['comp_name']
+            result['credibility'] = information[j]['credibility']
+            result['address'] = information[j]['address']
+            result['contact'] = information[j]['contact']
+            result['email'] = information[j]['email']
             result_list.append(result)
+
 
 
     date = {
@@ -300,7 +310,7 @@ def fac_list_edit(request):
     facility_id = request['facility_id']
 
     company_list = Facility.objects.get(facility_id=facility_id)
-    company_list.facility_name = facility_name
+    company_list.facility_name = facility_name.replace('호기', '')
 
     company_list.save();
 
@@ -536,7 +546,7 @@ def comp_prod_update_modal(request):
 
     )
 
-    return redirect("/textile/product/search/")
+    return redirect("/textile/company/product/search/")
 
 # Draw table after reading csv file
 def comp_read_csv(request):
@@ -677,11 +687,21 @@ def comp_update_modal(request):
     user = request.user.groups.values('id')[0]['id']
     if request.method == 'POST':
         request = json.loads(request.body)
+
         # id generator
-        str_id = 'FAC' + str(user) + '#' + request['comp_name'].replace("호기", "")
+        fac_lists = Facility.objects.all().order_by('facility_id').last()
+        if fac_lists is None or not fac_lists:
+            int_id = 0
+        else:
+            int_id = fac_lists.facility_id[5:]
+
+        str_id = id_generate('FAC' + str(user) + '#', int_id)
+
+        # str_id = 'FAC' + str(user) + '#' + request['comp_name'].replace("호기", "")
         Facility.objects.create(
             facility_id=str_id,
             facility_name=request['comp_name'].replace("호기", ""),
+            fac_cat_id_id=request['fac_cat_id'],
             comp_id=Information.objects.get(comp_id=user)
         )
     return redirect("/textile/order/list/")

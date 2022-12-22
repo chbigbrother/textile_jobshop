@@ -119,7 +119,7 @@ $(function(){
                                                             '<span>제품명 : ' + content_data.textile_name + '</span><br/>' +
                                                             '<span>계약일자 : ' + dateformat(content_data.sch_date) + '</span>' +
                                                             '<span class="text-primary d-block mb-4">수량 : ' + content_data.amount + 'yd</span>' +
-                                                            '<span>제품명 : ' + content_data.textile_name + '</span>' +
+
                                                         '</div>' +
 
                                                     '</div>';

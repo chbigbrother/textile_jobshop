@@ -7,7 +7,7 @@
         <div class="card shadow mb-4">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-primary">{{ comp.comp_name }} &nbsp; 신뢰도</h6>
-                <div class="dropdown no-arrow" {% if user.groups.all.0.name == '생산자' %} none {% endif %}">
+                <div class="dropdown no-arrow {% if user.groups.all.0.name == '생산자' %} none {% endif %}">
                     <!--<a href="#" class="btn btn-warning light mr-2" id="edit_{{ order.prod_id.prod_name }}">-->
                     <a href="#" class="btn btn-warning light mr-2 rateComp" id="edit_{{ order.prod_id.prod_name }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">

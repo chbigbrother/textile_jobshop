@@ -175,7 +175,7 @@ function activate() {
     obj.work_exp_date = arr; // $('#estDate').val();
 
     $.ajax({
-        url: '/textile/schedule/graph/csv//', /* "{% url 'schedule:generate_data' %}",*/
+        url: '/textile/schedule/graph/csv/generate/', /* "{% url 'schedule:generate_data' %}",*/
         data: JSON.stringify(obj),
         type: 'json',
         contentType: 'application/json',
@@ -576,105 +576,36 @@ $(function() {
                 contentType: 'application/json',
                 processData: false,
                 success: function(result) {
-                    $.ajax({
-                        url: '/textile/schedule/confirmed/order/',/* "{% url 'schedule:confirmed_order' %}", */
-                        method: 'GET',
-                        dataType: 'json',
-                        contentType: 'application/json',
-                        processData: false,
-                        success: function(data) {
-                            var innerHTML = '';
-                            if (data.length > 0) {
-                                for (var i = 0; i < data.length; i++) {
-                                    if (data[i][0].use_yn == 'Y') {
-                                        $('#activationSetting').remove();
-                                        $('#sendSchedule').remove();
-                                        $('#sendBtn').html('<a href="#" onclick="removeSchedule()" id="removeSchedule"' +
-                                            'class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">' +
-                                            '<i class="fas fa-plus-square"></i>&nbsp 초기화</a>');
-                                        /* 추후 삭제 */
-                                        var prod_name = result[i].prod_id.toString();
-                                        var orderid = result[i].order_id_id.toString();
-                                        /* 추후 삭제 */
-
-                                        var date = result[i].sch_id.toString()
-                                        var year = date.substring(3, 7);
-                                        var month = date.substring(7, 9);
-                                        var day = date.substring(9, 11);
-                                        date = year + '-' + month + '-' + day;
-                                        var count = i + 1;
-                                        innerHTML += '<tr>' +
-                                            '<input type="hidden" class="order_id" value="' + result[i].order_id + '" />' +
-                                            '<input type="hidden" class="sch_id" value="' + result[i].sch_id + '" />' +
-                                            '<td scope="row">' + count + '</td>' +
-                                            '<td>' + date + '</td>' +
-                                            '<td>' + orderid + '</td>' +
-                                            '<td>' + prod_name + '</td>' +
-                                            '<td><div style="width:1rem; height:1rem; background-color:' + result[i].sch_color + '"></div></td>' +
-                                            '<td><div class="checkbox" id="accept-' + count + '" style="font-weight:bold; color:#2e59d9;" />확정</td>' +
-                                            '</tr>';
-                                    } else {
-                                        for (var i = 0; i < result.length; i++) {
-                                            var prod_name = result[i][0].prod_id.toString();
-                                            var orderid = result[i][0].order_id_id.toString();
-                                            var date = result[i][0].sch_id.toString();
-                                            // var date = result[i].schedule[0].sch_id.toString();
-                                            var year = date.substring(3, 7);
-                                            var month = date.substring(7, 9);
-                                            var day = date.substring(9, 11);
-                                            date = year + '-' + month + '-' + day;
-                                            var count = i + 1;
-                                            innerHTML += '<tr>' +
-                                                '<input type="hidden" class="order_id" value="' + orderid + '" />' +
-                                                '<input type="hidden" class="sch_id" value="' + result[i][0].sch_id + '" />' +
-                                                '<td scope="row">' + count + '</td>' +
-                                                '<td>' + date + '</td>' +
-                                                '<td>' + orderid + '</td>' +
-                                                '<td>' + prod_name + '</td>' +
-                                                '<td><div style="width:1rem; height:1rem; background-color:' + result[i][0].sch_color + '"></div></td>' +
-                                                '<td><input class="checkbox" id="accept-' + count + '" type="checkbox" checked="checked" value="Y" name="check"/></td>' +
-                                                '</tr>';
-                                        }
-                                    }
+                    var innerHTML = '';
+                    for (var i=0; i<result.length; i++){
+                        innerHTML += '<tr>' +
+                                '<input type="hidden" class="order_id" value="' + result[i].order_id + '" />' +
+                                '<input type="hidden" class="sch_id" value="' + result[i].sch_id + '" />' +
+                                '<td scope="row">' + (i + 1) + '</td>' +
+                                '<td>' + result[i].sch_date + '</td>' +
+                                '<td>' + result[i].order_id + '</td>' +
+                                '<td>' + result[i].prod_name + '</td>' +
+                                '<td><div style="width:1rem; height:1rem; background-color:' + result[i].sch_color + '"></div></td>';
+                                if(result[i]['order_status'] == '1'){
+                                    innerHTML +=  '<td><div class="checkbox" id="accept-' + (i + 1) + '" style="font-weight:bold; color:#2e59d9;" />요청</td></tr>';
+                                } else if (result[i]['order_status'] == '2'){
+                                    innerHTML +=  '<td><div class="checkbox" id="accept-' + (i + 1) + '" style="font-weight:bold; color:#2e59d9;" />확정</td></tr>';
+                                }else {
+                                    innerHTML += '<td><input class="checkbox" id="accept-' + (i + 1) + '" type="checkbox" checked="checked" value="Y" name="check"/></td></tr>';
                                 }
-                            } else {
-                                for (var i = 0; i < result.length; i++) {
-                                    /* 추후 삭제 */
-                                    var prod_name = result[i].prod_id.toString();
-                                    var orderid = result[i].order_id_id.toString();
-                                    /* 추후 삭제 */
-                                    var date = result[i].sch_id.toString();
-                                    var year = date.substring(3, 7);
-                                    var month = date.substring(7, 9);
-                                    var day = date.substring(9, 11);
-                                    date = year + '-' + month + '-' + day;
-                                    var count = i + 1;
-                                    innerHTML += '<tr>' +
-                                        '<input type="hidden" class="order_id" value="' + orderid + '" />' +
-                                        '<input type="hidden" class="sch_id" value="' + result[i].sch_id + '" />' +
-                                        '<td scope="row">' + count + '</td>' +
-                                        '<td>' + date + '</td>' +
-                                        '<td>' + orderid + '</td>' +
-                                        '<td>' + prod_name + '</td>' +
-                                        '<td><input class="checkbox" id="accept-' + count + '" type="checkbox" checked="checked" value="Y" name="check"/></td>' +
-                                        '</tr>';
-                                }
-                            }
-                            $('#order_body').html(innerHTML);
-                        } /* data ajax */
-                    }).done(function(d) {
-                        $('input:checkbox[name="check"]').on('change', function() {
-                            if ($(this).val() == 'Y') {
-                                $(this).val('N');
-                            } else {
-                                $(this).val('Y');
-                            }
-                        })
-                    });
-            } /* result ajax */
-        });
-
-
+                    }
+                    $('#order_body').html(innerHTML);
+                }
+            }).done(function(d) {
+                $('input:checkbox[name="check"]').on('change', function() {
+                    if ($(this).val() == 'Y') {
+                        $(this).val('N');
+                    } else {
+                        $(this).val('Y');
+                    }
+                })
+            });
+            /* result ajax */
         }
     });
 

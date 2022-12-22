@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 from django.urls import reverse_lazy
 from django.http import HttpResponse, JsonResponse
 from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView, TemplateView
@@ -22,6 +22,7 @@ import datetime, json, csv, math
 import pandas as pd
 from urllib.parse import quote
 
+
 # 수주관리등록 order management register HTML
 def home(request):
     template_name = 'textile/order/order_regist.html'
@@ -31,6 +32,7 @@ def home(request):
         'selected': 'ordermanagement'
     }
     return render(request, template_name, context)
+
 
 # 수주관리검색 order management search HTML
 def order_list_view(request):
@@ -42,14 +44,14 @@ def order_list_view(request):
         'dateFrom': dateFrom,
         'dateTo': dateTo,
         'order_list': order_list,
-        'orderStatus':orderStatus,
+        'orderStatus': orderStatus,
         'path': '주문정보 / 주문 검색',
         'selected': 'ordermanagement'
     }
     return render(request, template_name, context)
 
-def registered_order_lists(request):
 
+def registered_order_lists(request):
     dateFrom, dateTo, order_list = order_list_query(request)
     result_list = []
     order_dict = {}
@@ -64,7 +66,6 @@ def registered_order_lists(request):
         order_dict["email"] = i.email
         result_list.append(order_dict);
 
-
     def json_default(value):
         if isinstance(value, datetime.date):
             return value.strftime('%Y-%m-%d')
@@ -72,6 +73,7 @@ def registered_order_lists(request):
 
     return HttpResponse(json.dumps(result_list, default=json_default, ensure_ascii=False),
                         content_type="application/json")
+
 
 def order_status(request):
     status = '1'
@@ -88,6 +90,7 @@ def order_status(request):
     #         status = order_status.order_status
     #         result_dict['status'] = status
     result_dict['status'] = status
+
     def json_default(value):
         if isinstance(value, datetime.date):
             return value.strftime('%Y-%m-%d')
@@ -95,6 +98,7 @@ def order_status(request):
 
     return HttpResponse(json.dumps(result_dict, default=json_default, ensure_ascii=False),
                         content_type="application/json")
+
 
 # 수주관리검색 항목 조회
 def order_list_query(request):
@@ -120,13 +124,15 @@ def order_list_query(request):
 
             date_from = request.GET['dateFrom'].replace('-', '')
             date_to = request.GET['dateTo'].replace('-', '')
-            order_list = OrderList.objects.filter(sch_date__gte=date_from, order_status=orderStatus).filter(sch_date__lte=date_to).filter(cust_name=user_name)
+            order_list = OrderList.objects.filter(sch_date__gte=date_from, order_status=orderStatus).filter(
+                sch_date__lte=date_to).filter(cust_name=user_name)
 
         else:
             sch_date_from = date
             sch_date_to = datetime.datetime.today()
             order_list = OrderList.objects.filter(order_status=orderStatus,
-                                                  sch_date__lte=datetime.datetime.today().strftime("%Y%m%d")).filter(cust_name=user_name)
+                                                  sch_date__lte=datetime.datetime.today().strftime("%Y%m%d")).filter(
+                cust_name=user_name)
         for i in order_list:
             product = Product.objects.filter(prod_id=i.prod_id)
             if len(product) > 0:
@@ -143,41 +149,25 @@ def order_list_query(request):
             date_from = request.GET['dateFrom'].replace('-', '')
             date_to = request.GET['dateTo'].replace('-', '')
 
-            result_list = OrderList.objects.filter(sch_date__gte=date_from).filter(sch_date__lte=date_to).filter(order_status=orderStatus)
+            result_list = OrderList.objects.filter(sch_date__gte=date_from).filter(sch_date__lte=date_to).filter(
+                order_status=orderStatus)
         else:
             sch_date_from = date
             sch_date_to = datetime.datetime.today()
             result_list = OrderList.objects.filter(sch_date__gte=date.strftime("%Y%m%d"), order_status=orderStatus,
-                                                  sch_date__lte=datetime.datetime.today().strftime("%Y%m%d"))
+                                                   sch_date__lte=datetime.datetime.today().strftime("%Y%m%d"))
     else:
         if 'dateFrom' in request.GET:
             sch_date_from = datetime.datetime.strptime(request.GET['dateFrom'], "%Y-%m-%d")
             sch_date_to = datetime.datetime.strptime(request.GET['dateTo'], "%Y-%m-%d")
             orderStatus = request.GET['orderStatus']
-            order_list = OrderList.objects.filter(order_status=orderStatus)
 
             date_from = request.GET['dateFrom'].replace('-', '')
             date_to = request.GET['dateTo'].replace('-', '')
+            order_list = OrderList.objects.filter(order_status=orderStatus).filter(sch_date__gte=date_from).filter(
+                sch_date__lte=date_to).order_by('-sch_date')
             # order_list = OrderList.objects.filter(sch_date__gte=date_from).filter(sch_date__lte=date_to)
-                # .filter(prod_id__comp_id=group_id)
-            if len(order_list) > 0:
-                for i in order_list:
-                    product = Product.objects.filter(prod_id=i.prod_id, comp_id=group_id)
-                    if len(product) > 0:
-                        for j in product:
-                            if i.prod_id==j.prod_id:
-                                i.prod_id = j.prod_name
-                                i.ord_status = int(orderStatus)
-                                result_list.append(i)
-
-        else:
-            sch_date_from = date
-            sch_date_to = datetime.datetime.today()
-            orderStatus = int(orderStatus)
-            order_list = OrderList.objects.filter(order_status=orderStatus)
-            #order_list = OrderList.objects.filter(sch_date__gte=date.strftime("%Y%m%d"),
-             #                                     sch_date__lte=datetime.datetime.today().strftime("%Y%m%d"))
-                # .filter(prod_id__comp_id=group_id)
+            # .filter(prod_id__comp_id=group_id)
             if len(order_list) > 0:
                 for i in order_list:
                     product = Product.objects.filter(prod_id=i.prod_id, comp_id=group_id)
@@ -188,7 +178,27 @@ def order_list_query(request):
                                 i.ord_status = int(orderStatus)
                                 result_list.append(i)
 
-    return sch_date_from.strftime("%Y-%m-%d"), sch_date_to.strftime("%Y-%m-%d"), int(orderStatus), result_list # order_list
+        else:
+            sch_date_from = date
+            sch_date_to = datetime.datetime.today()
+            orderStatus = int(orderStatus)
+            order_list = OrderList.objects.filter(order_status=orderStatus)
+            # order_list = OrderList.objects.filter(sch_date__gte=date.strftime("%Y%m%d"),
+            #                                     sch_date__lte=datetime.datetime.today().strftime("%Y%m%d"))
+            # .filter(prod_id__comp_id=group_id)
+            if len(order_list) > 0:
+                for i in order_list:
+                    product = Product.objects.filter(prod_id=i.prod_id, comp_id=group_id)
+                    if len(product) > 0:
+                        for j in product:
+                            if i.prod_id == j.prod_id:
+                                i.prod_id = j.prod_name
+                                i.ord_status = int(orderStatus)
+                                result_list.append(i)
+
+    return sch_date_from.strftime("%Y-%m-%d"), sch_date_to.strftime("%Y-%m-%d"), int(
+        orderStatus), result_list  # order_list
+
 
 # 수주관리검색 수정
 def order_list_edit(request):
@@ -207,7 +217,7 @@ def order_list_edit(request):
     product = OrderList.objects.get(order_id=order_id)
     prod_list_select = Product.objects.filter(prod_name=prod_name)[0]
     product.cust_name = cust_name
-    product.prod_id = prod_list_select.prod_id # Product.objects.filter(prod_name=prod_name)[0]
+    product.prod_id = prod_list_select.prod_id  # Product.objects.filter(prod_name=prod_name)[0]
     product.amount = amount
     product.exp_date = exp_date.replace('-', '').replace('-', '')
     product.contact = contact
@@ -216,6 +226,7 @@ def order_list_edit(request):
     product.save();
 
     return JsonResponse({"message": 'success'})
+
 
 # 수주관리검색 수정
 def order_list_delete(request):
@@ -226,6 +237,7 @@ def order_list_delete(request):
     order.delete();
 
     return JsonResponse({"message": 'success'})
+
 
 # 스케쥴링실행 메뉴의 해당 주문일자 별 수주검색
 def order_list_search(request):
@@ -241,7 +253,8 @@ def order_list_search(request):
         orderId = request['orderInfo']
         if len(orderId) > 0:
             for o in orderId:
-                order_list = OrderList.objects.filter(sch_date__gte=date_from).filter(sch_date__lte=date_to).filter(order_id=o).filter(Q(order_status=0)|Q(order_status=1))
+                order_list = OrderList.objects.filter(sch_date__gte=date_from).filter(sch_date__lte=date_to).filter(
+                    order_id=o).filter(Q(order_status=0) | Q(order_status=1))
 
                 # order_list = OrderList.objects.raw(
                 #     "SELECT cust_name, order_id, prod_id, amount, exp_date " +
@@ -257,7 +270,7 @@ def order_list_search(request):
                     # 필요 기계 대수 default 설정값 계산
                     # (수량 / 일일생산량) / 2
                     avail_fac_cnt = 0
-                    if((int(i.amount) / product.daily_prod_rate) // 2 > 0):
+                    if ((int(i.amount) / product.daily_prod_rate) // 2 > 0):
                         avail_fac_cnt = (int(i.amount) / product.daily_prod_rate) // 2
                     else:
                         avail_fac_cnt = 1
@@ -270,7 +283,8 @@ def order_list_search(request):
                     product_dict['avail_fac_cnt'] = avail_fac_cnt
                     order_list_result.append(product_dict)
         else:
-            order_list = OrderList.objects.filter(sch_date__gte=date_from).filter(sch_date__lte=date_to).filter(Q(order_status=0)|Q(order_status=1))
+            order_list = OrderList.objects.filter(sch_date__gte=date_from).filter(sch_date__lte=date_to).filter(
+                Q(order_status=0) | Q(order_status=1))
             print('order_list::', order_list)
             # order_list = OrderList.objects.raw(
             #     "SELECT cust_name, order_id, prod_id, amount, exp_date " +
@@ -305,7 +319,7 @@ def order_list_search(request):
             "FROM order_orderlist " +
             "WHERE sch_date >= '" + date.strftime("%Y%m%d") + "' AND " +
             "sch_date <= '" + datetime.datetime.today().strftime("%Y%m%d") + "'"
-            )
+        )
         for i in order_list:
             product_dict = {}
             product = Product.objects.get(prod_id=i.prod_id.prod_id)
@@ -322,8 +336,10 @@ def order_list_search(request):
             return value.strftime('%Y-%m-%d')
         raise TypeError('not JSON serializable')
 
-    return HttpResponse(json.dumps(order_list_result, default=json_default, ensure_ascii=False), content_type="application/json")
+    return HttpResponse(json.dumps(order_list_result, default=json_default, ensure_ascii=False),
+                        content_type="application/json")
     # return JsonResponse(list(order_list_result.values()), safe=False)
+
 
 def fixed_order(request):
     user = auth.get_user(request)
@@ -339,7 +355,8 @@ def fixed_order(request):
 
     final_result = []
     if group_name == '구매자':  # 고객
-        result = OrderSchedule.objects.filter(order_id__cust_name=user_name, use_yn='Y').filter(Q(sch_id__work_end_date__gte=date_to) | Q(sch_id__work_str_date__gte=date_from))
+        result = OrderSchedule.objects.filter(order_id__cust_name=user_name, use_yn='Y').filter(
+            Q(sch_id__work_end_date__gte=date_to) | Q(sch_id__work_str_date__gte=date_from))
 
         last_result = []  # 수정한 자리
         complist = []  # 수정한 자리
@@ -386,7 +403,9 @@ def fixed_order(request):
 
     # 생산자
     if group_name == '생산자':
-        result = OrderSchedule.objects.filter(Q(sch_id__work_str_date__gte=date_from, use_yn='Y') | Q(sch_id__work_str_date__lte=date_from, sch_id__work_end_date__gte=date_to, use_yn='Y'));
+        result = OrderSchedule.objects.filter(
+            Q(sch_id__work_str_date__gte=date_from, use_yn='Y') | Q(sch_id__work_str_date__lte=date_from,
+                                                                    sch_id__work_end_date__gte=date_to, use_yn='Y'));
 
         if len(result) > 0:
             for q in result:
@@ -481,7 +500,9 @@ def fixed_order(request):
             return value.strftime('%Y-%m-%d')
         raise TypeError('not JSON serializable')
 
-    return HttpResponse(json.dumps(last_result, default=json_default, ensure_ascii=False), content_type="application/json")
+    return HttpResponse(json.dumps(last_result, default=json_default, ensure_ascii=False),
+                        content_type="application/json")
+
 
 # csv file upload
 def upload_file(request):
@@ -493,6 +514,7 @@ def upload_file(request):
     else:
         form = FileUploadCsv()
     return JsonResponse({"message": request.FILES})
+
 
 # 수주문서양식다운로드
 def order_csv_download_blank(request):
@@ -519,6 +541,7 @@ def order_csv_download_blank(request):
     ])
     return response
 
+
 # Draw table after reading csv file
 def order_read_csv(request):
     # readFile = request.FILES['file'];
@@ -533,24 +556,33 @@ def order_read_csv(request):
             col = read[['고객명', '주문일자', '마감기한', '제품명', '수량', '전화번호', '이메일']]
             for row in range(int(col.size / 7)):
                 data_dict = {}
-                data_dict['cust_name'] = str(col.loc[[row], ['고객명']].values).replace('[', '').replace(']', '').replace("'", '')
-                data_dict['sch_date'] = str(col.loc[[row], ['주문일자']].values).replace('[', '').replace(']', '').replace("'", '')
-                data_dict['exp_date'] = str(col.loc[[row], ['마감기한']].values).replace('[', '').replace(']', '').replace("'", '')
-                data_dict['prod_name'] = str(col.loc[[row], ['제품명']].values).replace('[', '').replace(']', '').replace("'", '')
-                data_dict['amount'] = str(col.loc[[row], ['수량']].values).replace('[', '').replace(']', '').replace("'", '')
-                data_dict['contact'] = str(col.loc[[row], ['전화번호']].values).replace('[', '').replace(']', '').replace("'", '')
-                data_dict['email'] = str(col.loc[[row], ['이메일']].values).replace('[', '').replace(']', '').replace("'", '')
+                data_dict['cust_name'] = str(col.loc[[row], ['고객명']].values).replace('[', '').replace(']', '').replace(
+                    "'", '')
+                data_dict['sch_date'] = str(col.loc[[row], ['주문일자']].values).replace('[', '').replace(']', '').replace(
+                    "'", '')
+                data_dict['exp_date'] = str(col.loc[[row], ['마감기한']].values).replace('[', '').replace(']', '').replace(
+                    "'", '')
+                data_dict['prod_name'] = str(col.loc[[row], ['제품명']].values).replace('[', '').replace(']', '').replace(
+                    "'", '')
+                data_dict['amount'] = str(col.loc[[row], ['수량']].values).replace('[', '').replace(']', '').replace("'",
+                                                                                                                   '')
+                data_dict['contact'] = str(col.loc[[row], ['전화번호']].values).replace('[', '').replace(']', '').replace(
+                    "'", '')
+                data_dict['email'] = str(col.loc[[row], ['이메일']].values).replace('[', '').replace(']', '').replace("'",
+                                                                                                                   '')
                 data_list.append(data_dict)
+
     def json_default(value):
         if isinstance(value, datetime.date):
             return value.strftime('%Y-%m-%d')
         raise TypeError('not JSON serializable')
 
-    return HttpResponse(json.dumps(data_list, default=json_default, ensure_ascii=False), content_type="application/json")
+    return HttpResponse(json.dumps(data_list, default=json_default, ensure_ascii=False),
+                        content_type="application/json")
+
 
 # Draw table after delete the data
 def order_delete_read_csv(request):
-
     if request.method == 'POST':
         request = json.loads(request.body)
         name = request['name']
@@ -566,24 +598,40 @@ def order_delete_read_csv(request):
         if '고객명' in col:
             col = read[['고객명', '주문일자', '마감기한', '제품명', '수량', '전화번호', '이메일']]
             for row in range(int(col.size / 7)):
-                if str(col.loc[[row], ['고객명']].values).replace('[', '').replace(']', '').replace("'", '') == name and str(col.loc[[row], ['수량']].values).replace('[', '').replace(']', '').replace("'", '') == amount:
+                if str(col.loc[[row], ['고객명']].values).replace('[', '').replace(']', '').replace("'",
+                                                                                                 '') == name and str(
+                        col.loc[[row], ['수량']].values).replace('[', '').replace(']', '').replace("'", '') == amount:
                     continue;
                 else:
                     data_dict = {}
-                    data_dict['cust_name'] = str(col.loc[[row], ['고객명']].values).replace('[', '').replace(']', '').replace("'", '')
-                    data_dict['sch_date'] = str(col.loc[[row], ['주문일자']].values).replace('[', '').replace(']', '').replace("'", '')
-                    data_dict['exp_date'] = str(col.loc[[row], ['마감기한']].values).replace('[', '').replace(']', '').replace("'", '')
-                    data_dict['prod_name'] = str(col.loc[[row], ['제품명']].values).replace('[', '').replace(']', '').replace("'", '')
-                    data_dict['amount'] = str(col.loc[[row], ['수량']].values).replace('[', '').replace(']', '').replace("'", '')
-                    data_dict['contact'] = str(col.loc[[row], ['전화번호']].values).replace('[', '').replace(']', '').replace("'", '')
-                    data_dict['email'] = str(col.loc[[row], ['이메일']].values).replace('[', '').replace(']', '').replace("'", '')
+                    data_dict['cust_name'] = str(col.loc[[row], ['고객명']].values).replace('[', '').replace(']',
+                                                                                                          '').replace(
+                        "'", '')
+                    data_dict['sch_date'] = str(col.loc[[row], ['주문일자']].values).replace('[', '').replace(']',
+                                                                                                          '').replace(
+                        "'", '')
+                    data_dict['exp_date'] = str(col.loc[[row], ['마감기한']].values).replace('[', '').replace(']',
+                                                                                                          '').replace(
+                        "'", '')
+                    data_dict['prod_name'] = str(col.loc[[row], ['제품명']].values).replace('[', '').replace(']',
+                                                                                                          '').replace(
+                        "'", '')
+                    data_dict['amount'] = str(col.loc[[row], ['수량']].values).replace('[', '').replace(']', '').replace(
+                        "'", '')
+                    data_dict['contact'] = str(col.loc[[row], ['전화번호']].values).replace('[', '').replace(']',
+                                                                                                         '').replace(
+                        "'", '')
+                    data_dict['email'] = str(col.loc[[row], ['이메일']].values).replace('[', '').replace(']', '').replace(
+                        "'", '')
                     data_list.append(data_dict)
+
     def json_default(value):
         if isinstance(value, datetime.date):
             return value.strftime('%Y-%m-%d')
         raise TypeError('not JSON serializable')
 
-    return HttpResponse(json.dumps(data_list, default=json_default, ensure_ascii=False), content_type="application/json")
+    return HttpResponse(json.dumps(data_list, default=json_default, ensure_ascii=False),
+                        content_type="application/json")
 
 
 # Save data into the Database by reading csv file
@@ -610,6 +658,7 @@ def order_update_csv(request):
             )
 
     return redirect("/textile/order/list/")
+
 
 # Save data into the Database from modal elements
 def order_update_modal(request):
@@ -655,7 +704,9 @@ def order_update_modal(request):
             return value.strftime('%Y-%m-%d')
         raise TypeError('not JSON serializable')
 
-    return HttpResponse(json.dumps(order_list, default=json_default, ensure_ascii=False), content_type="application/json")
+    return HttpResponse(json.dumps(order_list, default=json_default, ensure_ascii=False),
+                        content_type="application/json")
+
 
 def avail_comps(request):
     for i in request.GET:
@@ -666,7 +717,8 @@ def avail_comps(request):
     date_to = request['date_to'].replace('-', '')
 
     result_list = []
-    data_list = OrderSchedule.objects.filter(sch_id__work_str_date__gte=date_from, sch_id__work_str_date__lte=date_to, use_yn="N", order_id=order_id)
+    data_list = OrderSchedule.objects.filter(sch_id__work_str_date__gte=date_from, sch_id__work_str_date__lte=date_to,
+                                             use_yn="N", order_id=order_id)
     order_list = OrderList.objects.get(order_id=order_id)
 
     for i in data_list:
@@ -680,12 +732,12 @@ def avail_comps(request):
         result_dict['comp_name'] = cred.comp_name
         result_dict['cost'] = money_count(i.offer_price)
         for j in product_list:
-
             result_dict['prod_name'] = j.prod_name
         result_dict['order_id'] = i.order_id_id
         result_dict['credibility'] = cred.credibility
         result_list.append(result_dict)
-    print(result_list)
+    print(result_list);
+
     def json_default(value):
         if isinstance(value, datetime.date):
             return value.strftime('%Y-%m-%d')
@@ -693,6 +745,7 @@ def avail_comps(request):
 
     return HttpResponse(json.dumps(result_list, default=json_default, ensure_ascii=False),
                         content_type="application/json")
+
 
 def product_lists(request):
     result = Product.objects.all()
@@ -718,7 +771,6 @@ def product_lists(request):
 
     return HttpResponse(json.dumps(final, default=json_default, ensure_ascii=False), content_type="application/json")
 
+
 def order_test(request):
-
-
     return JsonResponse({"message": 'error'})

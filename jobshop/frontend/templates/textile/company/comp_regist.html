@@ -43,13 +43,13 @@
                         {% for comp in comp_list %}
                         <tr>
                             <td>{{ forloop.counter }}</td>
-                            <td class="compName" style="display:none;">{{ comp.comp_name }}</td>
+                            <td class="compName" style="display:none;">{{ comp.comp_id.comp_name }}</td>
                             <td class="facNum">{{ comp.facility_name }} &nbsp; 호기</td>
                             <td class="facilityId" style="display:none;">{{ comp.facility_id }}</td>
                             <td class="facCat">{{ comp.fac_cat_id.fac_cat_name }} </td>
                             <td style="text-align:center;">
                                 <div class="action-buttons">
-                                    <a href="#" id="edit_{{ comp.id }}" class="btn btn-secondary light mr-2 editContBtn">
+                                    <a href="#" id="edit_{{ comp.facility_id }}" class="btn btn-secondary light mr-2 editContBtn">
                                         <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20px" height="24px" viewBox="0 0 24 24" version="1.1" class="svg-main-icon">
                                             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
                                                 <rect x="0" y="0" width="24" height="24"></rect>
@@ -58,7 +58,7 @@
                                             </g>
                                         </svg>
                                     </a>
-                                    <a href="#" id="delete_{{ comp.id }}" class="btn btn-danger light deleteBtn">
+                                    <a href="#" id="delete_{{ comp.facility_id }}" class="btn btn-danger light deleteBtn">
                                         <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20px" height="20px" viewBox="0 0 24 24" version="1.1" class="svg-main-icon">
                                             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
                                                 <rect x="0" y="0" width="24" height="24"></rect>
@@ -213,8 +213,9 @@
                     <div class="col-md-3"><label class="pt-2" style="font-size:0.95rem;">설비 종류</label></div>
                     <div class="col-lg-6">
                         <select class="form-control text-center">
-                            <option value="F_CAT_001">재직</option>
-                            <option value="F_CAT_002">염색</option>
+                            {% for cat in category_list %}
+                                <option class="fac_cats" value="{{ cat.fac_cat_id }} ">{{ cat.fac_cat_name }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                 </div>
@@ -341,7 +342,7 @@
         $("#modal-upload").on("click", function(){
             var obj = new Object();
             obj.comp_name = $('#compname').val();
-
+            obj.fac_cat_id = $('.fac_cats').val()
             $.ajax({
                 url: "{% url 'company:company.comp_update_modal' %}",
                 data : JSON.stringify(obj),
@@ -349,102 +350,20 @@
                 contentType: 'application/json',
                 method: "POST",
                 success: function(data){
-                    $(location).attr('href', "{% url 'company:textile.company.list' %}")
+                    // $(location).attr('href', "{% url 'company:textile.company.list' %}")
+                    location.reload();
                 }
             })
         });
-
-        $("#fileReadBtn").on("click", function(e){
-            $.ajax({
-                url: _url,
-                method:'POST',
-                contentType: false,
-                processData: false,
-                data: formData,
-                success: function(result){
-                    $(".dropdown-btn").css('display', 'block');
-                    $(".upload-btn").css('display', 'none');
-                    var innerHTML;
-                    var count = 0;
-                    for(var i=0; i<result.length; i++){
-                        count = count + 1;
-                        innerHTML += '<tr>' +
-                            '<td>' + count + '</td>' +
-                            '<td><input name="facility_name" value="' + result[i].facility_name + '"/></td>' +
-                            '<td style="text-align:center;">' +
-                                '<a href="#" id="delete_'+ count +'" onclick="deletedOrder(\'' + result[i].prod_name + '\',\'' + result[i].density + '\')"><i class="fas fa-trash-alt"></i></a>' +
-                            '</td>' +
-                        '</tr>';
-                    }
-                    $('.tbody-data').html(innerHTML);
-                    if(result.message == 'error'){
-                        Swal.fire({
-                          icon: 'error',
-                          title: '파일 형식 오류',
-                          text: '데이터 항목을 형식에 맞춘 후 업로드 해 주세요.',
-                          footer: '<a href="">형식 다운로드</a>'
-                        });
-                        return false;
-                    } else {
-                        $('#excelUploadModal').modal('hide');
-                    }
-                },
-                error: function(error){
-                    console.log(error);
-                    // $('#css-loader').removeClass("is-active");
-                }
-            });
-        });
-
-        $('#form').attr('action',"{% url 'order:order.csvCreate' %}").submit();
-    });
-    function deletedOrder(name, amount){
-        var selectdata = new Object();
-        selectdata.name = name;
-        selectdata.amount = amount;
-        selectdata.fileName = fileName;
-        Swal.fire({
-          icon: 'error',
-          title: '삭제하시겠습니까?',
-          showCancelButton: true,
-          text: ''
-        }).then(function(){
-            $.ajax({
-                url: "{% url 'order:order.order_delete_read_csv' %}",
-                data : JSON.stringify(selectdata),
-                type:'json',
-                contentType: 'application/json',
-                method: "POST",
-                success: function(data){
-                    $('.tbody-data').html('');
-                    $(".dropdown-btn").css('display', 'block');
-                    var innerHTML;
-                    var count = 0;
-                    for(var i=0; i<data.length; i++){
-                        count = count + 1;
-                        innerHTML += '<tr>' +
-                            '<td>' + count + '</td>' +
-                            '<td><input name="facility_name" value="' + data[i].facility_name + '"/></td>' +
-                            '<td style="text-align:center;">' +
-                                '<a href="#" id="delete_'+ count +'" onclick="deletedOrder(\'' + data[i].cust_name + '\',\'' + data[i].amount + '\')"><i class="fas fa-trash-alt"></i></a>' +
-                            '</td>' +
-                        '</tr>';
-                    }
-                    $('.tbody-data').html(innerHTML);
-                },
-                error: function(error){
-                    console.log(error)
-                }
-            });
-        });
-        return false;
 
         /* ************************** 검색 및 수정 ************** */
         // 삭제
         var selectdata = new Object();
         $('.deleteBtn').on('click', function(e){
             var str = e.target.parentElement.id.split('_');
+            console.log(e.target.parentElement.id);
             selectdata.id = str[1];
+            selectdata.type = "facility";
             Swal.fire({
               icon: 'error',
               title: '삭제하시겠습니까?',
@@ -502,6 +421,7 @@
             });
             /* edit */
         });
-    }
+    });
+
 </script>
 {% endblock %}

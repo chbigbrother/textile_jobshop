@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.db.models import Max
-from django.db.models.aggregates import Count
+from django.db.models import Count
 from django.contrib.auth.models import User, Group
 from django.http import JsonResponse
 from django.http.response import HttpResponse
@@ -501,6 +501,7 @@ def generate_data(request):
             mn_list.append(j.replace('호기', ''))
     mn_set = set(mn_list)
     mn_list = list(mn_set)
+
     data.writelines('{0} {1} \n'.format(len(ord), int(max(mn_list).replace('호기', '').split('#')[1]) - 100))
 
     for i in range(len(ord)):
@@ -598,126 +599,33 @@ def available_list(request):
     dict_list = []
     result = []
     now = datetime.datetime.now();
+
     # 당일 확정 스케쥴 존재 시
-    if len(fixed_list(request, request.user.groups.values('id')[0]['id']))>0:
-        for i in fixed_list(request, request.user.groups.values('id')[0]['id']):
-            if i['use_yn'] == 'Y' and i['schedule'] is not None:
-                for j in i['schedule']:
-                    product_ids = j['prod_id']
-                    product_id = Product.objects.get(prod_id=product_ids)
-                    order_id = OrderList.objects.filter(prod_id=product_ids)
-                    order_num = ''
-                    comma_list = []
-                    for k in order_id.values():
-                        comma_list.append(k['order_id'])
+    available_list = Schedule.objects.raw(
+        ' SELECT sch_id, MAX(count) FROM company_schedule WHERE comp_id=' + str(request.user.groups.values('id')[0]['id']) +
+        ' AND STR_TO_DATE(created_at, "%%Y-%%m-%%d")= "' + now.strftime('%Y-%m-%d') + '"' +
+        ' AND count = (SELECT MAX(count) FROM company_schedule WHERE STR_TO_DATE(created_at, "%%Y-%%m-%%d")= "' + now.strftime('%Y-%m-%d') + '"' +
+        ') GROUP BY order_id '
+    )
 
-                    prod_name = product_id.prod_name
-                    j['prod_id'] = prod_name
-                    j['order_id_num'] = comma_str(comma_list)
-                    j['use_yn'] = i['use_yn']
-                    result.append(j)
+    for i in available_list:
+        avail_dict = {}
+        orders = OrderList.objects.get(order_id=i.order_id_id)
+        product_id = Product.objects.get(prod_id=i.prod_id)
+        if int(calc_date_str(date_plus(i.work_str_date, i.x_axis_2), i.work_end_date).days) > 0:
+            avail_dict['comp_id'] = i.comp_id_id
+            avail_dict['sch_date'] = orders.sch_date
+            avail_dict['order_id'] = i.order_id_id
+            avail_dict['sch_id'] = i.sch_id
+            avail_dict['sch_color'] = i.sch_color
+            avail_dict['prod_name'] = product_id.prod_name
+            avail_dict['order_status'] = orders.order_status
+            if orders.order_status == 2:
+                use_yn = "Y"
             else:
-                sch_list = Schedule.objects.filter(comp_id=request.user.groups.values('id')[0]['id'],
-                                                   created_at__year=now.year, created_at__month=now.month,
-                                                   created_at__day=now.day)
-                count = sch_list.aggregate(Max('count'))
-                count = str(count['count__max'])
-                available_list = Schedule.objects.raw(
-                    ' SELECT * FROM company_schedule WHERE count=' + count +
-                    ' AND STR_TO_DATE(created_at, "%%Y-%%m-%%d")= "' + now.strftime('%Y-%m-%d') + '"' +
-                    ' AND comp_id=' + str(request.user.groups.values('id')[0]['id']) + ' AND x_axis_2 IN ' +
-                    ' (SELECT MAX(x_axis_2) FROM company_schedule WHERE count=' + count +
-                    ' AND STR_TO_DATE(created_at, "%%Y-%%m-%%d")= "' + now.strftime(
-                        '%Y-%m-%d') + '" GROUP BY prod_id)' +
-                    ' GROUP BY prod_id'
-                )
-                avail_list = []
-                for i in available_list:
-                    date_diff = calc_date_str(i.work_str_date, i.work_end_date)
-                    if i.x_axis_2 < int(date_diff.days):
-                        avail_list.append(i)
-
-                color_list = []
-                final_list = []
-                dict_list = []
-                result = []
-                test_list = []
-                for p in avail_list:
-                    test_list.append(p)
-                    color_list.append(p.sch_color)
-
-                for tst in test_list:
-                    test = Schedule.objects.get(sch_id=tst.sch_id)
-                    color = Schedule.objects.filter(sch_id=tst.sch_id, comp_id=request.user.groups.values('id')[0]['id'])
-                    color.group_by = ['sch_color']
-                    final_list.append(color.aggregate(Max('sch_id')))
-
-                for i in range(len(final_list)):
-                    dict_list.append(final_list[i]['sch_id__max'])
-
-                for i in dict_list:
-                    schedule_list = Schedule.objects.filter(sch_id=i)
-                    result.append(list(schedule_list.values()))
-
-                for i in range(len(result)):
-                    product_ids = result[i][0]['prod_id']
-                    product_id = Product.objects.get(prod_id=product_ids)
-                    order_id = OrderList.objects.filter(prod_id=product_ids)
-                    comma_list = []
-                    for j in order_id.values():
-                        comma_list.append(j['order_id'])
-
-                    prod_name = product_id.prod_name
-                    result[i][0]['prod_id'] = prod_name
-                    result[i][0]['order_id_num'] = comma_str(comma_list)
-    else:
-        # 당일 확정 스케쥴이 존재하지 않을 때
-        sch_list = Schedule.objects.filter(comp_id=request.user.groups.values('id')[0]['id'],
-                                        created_at__year=now.year, created_at__month=now.month, created_at__day=now.day)
-        if len(sch_list) > 0:
-            count = sch_list.aggregate(Max('count'))
-            count = str(count['count__max'])
-            available_list = Schedule.objects.raw(
-                ' SELECT * FROM company_schedule WHERE count=' + count +
-                ' AND STR_TO_DATE(created_at, "%%Y-%%m-%%d")= "' + now.strftime('%Y-%m-%d') + '"'+
-                ' AND comp_id=' + str(request.user.groups.values('id')[0]['id']) + ' AND x_axis_2 IN ' +
-                ' (SELECT MAX(x_axis_2) FROM company_schedule WHERE count=' + count +
-                ' AND STR_TO_DATE(created_at, "%%Y-%%m-%%d")= "' + now.strftime('%Y-%m-%d') + '" GROUP BY prod_id)' +
-                ' GROUP BY prod_id'
-            )
-            avail_list = []
-            for i in available_list:
-                date_diff = calc_date_str(i.work_str_date, i.work_end_date)
-                if i.x_axis_2 < int(date_diff.days):
-                    avail_list.append(i)
-
-            for p in avail_list:
-                color_list.append(p.sch_color)
-
-            for i in color_list:
-                # color = Schedule.objects.raw('SELECT * FROM company_schedule WHERE sch_color = "' +  i + '" GROUP BY sch_color HAVING MAX(sch_id)')
-                color = Schedule.objects.filter(sch_color=i, comp_id=request.user.groups.values('id')[0]['id'])
-                final_list.append(color.aggregate(Max('sch_id')))
-
-            for i in range(len(final_list)):
-                dict_list.append(final_list[i]['sch_id__max'])
-
-            for i in dict_list:
-                schedule_list = Schedule.objects.filter(sch_id=i)
-                result.append(list(schedule_list.values()))
-
-            for i in range(len(result)):
-                print(result[i][0])
-                product_ids=result[i][0]['prod_id']
-                product_id=Product.objects.get(prod_id=product_ids)
-                order_id=OrderList.objects.filter(prod_id=product_ids, order_id=result[i][0]['order_id_id'])
-                comma_list = []
-                for j in order_id.values():
-                    comma_list.append(j['order_id'])
-
-                prod_name=product_id.prod_name
-                result[i][0]['prod_id'] = prod_name
-                result[i][0]['order_id_num'] = comma_str(comma_list)
+                use_yn = "N"
+            avail_dict['use_yn'] = use_yn
+            result.append(avail_dict)
 
     return result
 
@@ -739,8 +647,6 @@ def fixed_list(request, user_group):
     if user_group is None:
         user_group = request.user.groups.values('id')[0]['id'];
     date = datetime.datetime.today().strftime("%Y%m%d")
-
-    print('user_group : ', user_group)
 
     use_yn_list = OrderSchedule.objects.raw(
         ' SELECT * FROM order_orderschedule ' +
@@ -796,26 +702,42 @@ def fixed_order(request):
             for sch in result:
                 OrderSchedule.objects.filter(sch_id=sch).update(use_yn='N')
 
-
-        # 오더 아이디로 넘어옴
-        for ord in range(len(orders)):
-            ords = OrderSchedule.objects.filter(sch_id_id=schedules[ord])  # order_id 나중에 order_list 에서 조회해 오기
-            if not ords: # 최초 수락일 때,
-                # OrderSchedule.objects.filter(sch_id=ord).update(use_yn='Y')
-                # OrderSchedule.objects.update_or_create(sch_id_id=orders.sch_id_id).update(use_yn='N', offer_price=prices[ord], order_status=0)
-                OrderSchedule.objects.update_or_create(
-                    order_id=OrderList.objects.get(order_id=orders[ord]),
-                    sch_id=Schedule.objects.get(sch_id=schedules[ord]),
-                    offer_price=prices[ord],
-                    # use_yn='Y'
-                    use_yn='N'
-                )
-                OrderList.objects.filter(order_id=orders[ord]).update(order_status=1)
-                # OrderList.objects.filter(order_id=orders[ord]).update(order_status=1)
-            else: # 최초 수락이 아닐 때,
-                for ord in range(len(orders)):
-                    order_ids = OrderList.objects.filter(sch_id=Schedule.objects.get(sch_id=schedules[ord])).update(use_yn='N',offer_price=prices[ord])
-
+            # 오더 아이디로 넘어옴
+            for ord in range(len(orders)):
+                ords = OrderSchedule.objects.filter(order_id=orders[ord])  # order_id 나중에 order_list 에서 조회해 오기
+                if not ords:  # 최초 수락일 때,
+                    # OrderSchedule.objects.filter(sch_id=ord).update(use_yn='Y')
+                    # OrderSchedule.objects.update_or_create(sch_id_id=orders.sch_id_id).update(use_yn='N', offer_price=prices[ord], order_status=0)
+                    OrderSchedule.objects.update_or_create(
+                        order_id=OrderList.objects.get(order_id=orders[ord]),
+                        sch_id=Schedule.objects.get(sch_id=schedules[ord]),
+                        offer_price=prices[ord],
+                        # use_yn='Y'
+                        use_yn='N'
+                    )
+                    OrderList.objects.filter(order_id=orders[ord]).update(order_status=1)
+                    # OrderList.objects.filter(order_id=orders[ord]).update(order_status=1)
+                else:  # 최초 수락이 아닐 때,
+                    for ord in range(len(orders)):
+                        order_ids = OrderSchedule.objects.filter(
+                            sch_id=Schedule.objects.get(sch_id=schedules[ord])).update(use_yn='N',
+                                                                                       offer_price=prices[ord])
+                        OrderList.objects.filter(order_id=orders[ord]).update(order_status=1)
+        else:
+            # 오더 아이디로 넘어옴
+            for ord in range(len(orders)):
+                ords = OrderSchedule.objects.filter(order_id=orders[ord])  # order_id 나중에 order_list 에서 조회해 오기
+                if not ords:  # 최초 수락일 때,
+                    # OrderSchedule.objects.filter(sch_id=ord).update(use_yn='Y')
+                    # OrderSchedule.objects.update_or_create(sch_id_id=orders.sch_id_id).update(use_yn='N', offer_price=prices[ord], order_status=0)
+                    OrderSchedule.objects.update_or_create(
+                        order_id=OrderList.objects.get(order_id=orders[ord]),
+                        sch_id=Schedule.objects.get(sch_id=schedules[ord]),
+                        offer_price=prices[ord],
+                        # use_yn='Y'
+                        use_yn='N'
+                    )
+                    OrderList.objects.filter(order_id=orders[ord]).update(order_status=1)
 
     return JsonResponse({"message": 'success'})
 

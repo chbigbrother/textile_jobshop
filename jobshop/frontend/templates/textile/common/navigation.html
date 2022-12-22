@@ -96,9 +96,19 @@
                   </div>
                 </div>
               </li>
-              <li class="nav-item dropdown {% if request.resolver_match.url_name == 'textile.company.product' or request.resolver_match.url_name == 'textile.company.product.view' %} active {% endif %}">
+              <li class="nav-item {% if request.resolver_match.url_name == 'textile.company.product' or request.resolver_match.url_name == 'textile.company.product.view' %} active {% endif %}">
+                <a class="nav-link {% if request.resolver_match.url_name == 'textile.company.product.view' %} active {% endif %}" href="/textile/company/product/search/">
+                  <span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><polyline points="9 11 12 14 20 6" /><path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9" /></svg>
+                  </span>
+                  <span class="nav-link-title">
+                    제품관리
+                  </span>
+                </a>
+              </li>
+              <!-- <li class="nav-item dropdown {% if request.resolver_match.url_name == 'textile.company.product' or request.resolver_match.url_name == 'textile.company.product.view' %} active {% endif %}">
                 <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown" data-bs-auto-close="outside" role="button" aria-expanded="false" >
-                  <span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/checkbox -->
+                  <span class="nav-link-icon d-md-none d-lg-inline-block">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><polyline points="9 11 12 14 20 6" /><path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9" /></svg>
                   </span>
                   <span class="nav-link-title">
@@ -117,7 +127,7 @@
                     </div>
                   </div>
                 </div>
-              </li>
+              </li> -->
               <li class="nav-item dropdown {% if request.resolver_match.url_name == 'recommend' or request.resolver_match.url_name == 'textile.recommend.home' %} active {% endif %}">
                 <a class="nav-link dropdown-toggle" href="#navbar-extra" data-bs-toggle="dropdown" data-bs-auto-close="outside" role="button" aria-expanded="false" >
                   <span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/star -->

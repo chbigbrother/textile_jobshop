@@ -97,6 +97,7 @@
                                 </a>
                             {% endif %}
                         </td>
+                        {% if order.ord_status != 1 %}
                         <td style="text-align:center;">
                             <div class="action-buttons">
                                 {% if user.groups.all.0.name == '구매자' and order.ord_status == 2 %}
@@ -144,6 +145,7 @@
                             <!--<a href="#" id="edit_{{ order.prod_id.prod_name }}"><i class="far fa-edit {{ order.prod_id.prod_name }}"></i></a>
                             <a href="#" id="delete_{{ order.prod_id.prod_name }}" style="margin-left:10px; z-index:1000;"><i class="fas fa-trash-alt"></i></a>-->
                         </td>
+                        {% endif %}
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -182,7 +184,7 @@
                     </div>
                 </div>
                 <div class="row pknu-modal-row">
-                    <div class="col-md-3 pknu-modal-label"><label for="expDate" class="pt-2" style="font-size:0.95rem;">요청기한</label></div>
+                    <div class="col-md-3 pknu-modal-label"><label for="expDate" class="pt-2" style="font-size:0.95rem;">납기예정일</label></div>
                     <div class="col-lg-7" >
                          <input class="form-control text-center" type="text" name="dateFrom" id="expDate" />
                     </div>
@@ -306,7 +308,7 @@
                    enableTime: false,
                    dateFormat: "Y-m-d",
                    disableMobile: true,
-                   defaultDate: exp_date
+                   defaultDate: exp_date.replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3')
                    // defaultDate: [today.format('YYYY-MM-DD')]
             });
             $('#divProdName').html('');
@@ -430,9 +432,14 @@
                     }
                     $('.timeline').html(innerHTML);
                 }
+            }).then(function(){
+                $("input:radio[name=compCheck]").click(function(){
+                    $("#compSelectSubmitBtn").removeClass('none');
+                });
             });
         });
 
+        $("#compSelectSubmitBtn").addClass('none');
         /* 생산 업체 선택 submit */
         $('#compSelectSubmitBtn').on('click', function(e){
             var result = $("input[name='compCheck']:checked").val();
